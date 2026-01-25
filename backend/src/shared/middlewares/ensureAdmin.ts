@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
-import { Role } from "@prisma/client"; // Importamos o Enum do Prisma para evitar "strings mágicas"
+import { Role } from "@prisma/client";
 
 export function ensureAdmin(
   req: Request,
@@ -11,7 +11,7 @@ export function ensureAdmin(
   const { role } = req.user;
 
   if (role !== Role.ADMIN) {
-    throw new AppError("Access denied: Admins only", 403); // 403 = Forbidden
+    throw new AppError("Access denied: Admins only", 403);
   }
 
   return next();

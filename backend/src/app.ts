@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { AppError } from './shared/errors/AppError';
 
 import { authRoutes } from './modules/auth/auth.route';
+import { userRoutes } from './modules/users/user.route';
 
 export class App {
     public app: Express;
@@ -27,6 +28,7 @@ export class App {
         });
 
         this.app.use('/api/v1/auth', authRoutes);
+        this.app.use('/api/v1/users', userRoutes);
     }
 
     private exceptionHandler() {
