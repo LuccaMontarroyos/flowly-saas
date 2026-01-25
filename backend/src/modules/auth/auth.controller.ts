@@ -43,4 +43,11 @@ export class AuthController {
       next(error);
     }
   };
+
+  profile = async (req: Request, res: Response) => {
+    return res.json({
+      message: "Authenticated successfully",
+      user: req.user
+    })
+  }
 }
