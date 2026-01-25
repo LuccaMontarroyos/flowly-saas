@@ -3,7 +3,8 @@ import { AppError } from "../../shared/errors/AppError";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { Role, User } from "@prisma/client";
-
+import slugify from "slugify";
+import crypto from "crypto";
     
 interface RegisterDTO {
   companyName: string;
@@ -31,13 +32,14 @@ export class AuthService {
 
     const hashedPassword = await argon2.hash(password);
 
+    const slug = await this.generateUniqueSlug(companyName);
+
     const result = await prisma.$transaction(async (tx) => {
 
       const company = await tx.company.create({
         data: {
           name: companyName,
-          
-          slug: companyName.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
+          slug: slug,
         },
       });
 
@@ -66,6 +68,7 @@ export class AuthService {
       company: {
         id: result.company.id,
         name: result.company.name,
+        slug: result.company.slug,
       },
       token,
     };
@@ -106,10 +109,37 @@ export class AuthService {
     };
   }
 
+
+  private async generateUniqueSlug(companyName: string): Promise<string> {
+   
+    const baseSlug = slugify(companyName, {
+      lower: true,
+      strict: true,
+      trim: true,
+      locale: 'pt'
+    });
+
+    const existingCompany = await prisma.company.findUnique({
+      where: { slug: baseSlug },
+    });
+
+    if (!existingCompany) {
+      return baseSlug;
+    }
+
+
+    const randomSuffix = crypto.randomBytes(2).toString('hex');
+    return `${baseSlug}-${randomSuffix}`;
+  }
+  
+
   private generateToken(userId: string, companyId: string, role: string) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error("JWT_SECRET is not defined");
+
     return jwt.sign(
       { companyId, role },
-      process.env.JWT_SECRET as string,
+      secret,
       { subject: userId, expiresIn: "1d" }
     );
   }
