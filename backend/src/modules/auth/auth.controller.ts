@@ -49,5 +49,5 @@ export class AuthController {
       message: "Authenticated successfully",
       user: req.user
     })
-  }
+  }  
 }
