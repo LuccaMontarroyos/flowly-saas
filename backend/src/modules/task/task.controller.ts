@@ -15,11 +15,12 @@ export class TaskController {
       const schema = z.object({
         title: z.string().min(1),
         description: z.string().optional(),
-        projectId: z.string().uuid(),
-        assigneeId: z.string().uuid().optional(),
+        projectId: z.uuid(),
+        assigneeId: z.uuid().optional(),
+        status: z.enum(TaskStatus),
       });
 
-      const { title, description, projectId, assigneeId } = schema.parse(req.body);
+      const { title, description, projectId, assigneeId, status } = schema.parse(req.body);
       const { companyId } = req.user;
 
       const task = await this.taskService.create({
@@ -28,6 +29,7 @@ export class TaskController {
         projectId,
         companyId,
         assigneeId,
+        status
       });
 
       return res.status(201).json(task);
@@ -39,7 +41,7 @@ export class TaskController {
   listByProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const paramsSchema = z.object({
-        projectId: z.string().uuid(),
+        projectId: z.uuid(),
       });
 
       const { projectId } = paramsSchema.parse(req.params);
@@ -48,6 +50,24 @@ export class TaskController {
       const kanbanBoard = await this.taskService.listByProject(projectId, companyId);
 
       return res.json(kanbanBoard);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  move = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const paramsSchema = z.object({ id: z.string().uuid() });
+      const bodySchema = z.object({
+        status: z.enum(["TODO", "IN_PROGRESS", "DONE"]),
+        index: z.number().min(0),
+      });
+
+      const { id } = paramsSchema.parse(req.params);
+      const { status, index } = bodySchema.parse(req.body);
+
+      const task = await this.taskService.updatePosition(id, status as any, index);
+      return res.json(task);
     } catch (error) {
       next(error);
     }

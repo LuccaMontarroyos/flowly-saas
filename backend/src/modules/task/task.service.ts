@@ -8,6 +8,7 @@ interface CreateTaskDTO {
     projectId: string;
     companyId: string;
     assigneeId?: string;
+    status: TaskStatus
 }
 
 interface UpdateTaskDTO {
@@ -21,28 +22,37 @@ interface UpdateTaskDTO {
 
 export class TaskService {
 
-    async create({ title, description, projectId, companyId, assigneeId }: CreateTaskDTO) {
+    async create({ title, description, projectId, companyId, assigneeId, status }: CreateTaskDTO) {
 
+        
         const project = await prisma.project.findFirst({
             where: { id: projectId, companyId },
         });
-
+        
         if (!project) {
             throw new AppError("Project not found within this company", 404);
         }
-
+        
         if (assigneeId) {
             await this.validateAssignee(assigneeId, companyId);
         }
+        
+        const lastTask = await prisma.task.findFirst({
+            where: { projectId, status },
+            orderBy: { order: "desc" },
+        });
+
+        const newOrder = lastTask ? lastTask.order + 1 : 0;
 
         const task = await prisma.task.create({
             data: {
                 title,
                 description,
-                status: TaskStatus.TODO,
+                status,
                 projectId,
                 companyId,
                 assigneeId,
+                order: newOrder,
             },
             include: {
                 assignee: { select: { id: true, name: true, email: true } },
@@ -56,7 +66,7 @@ export class TaskService {
 
         const tasks = await prisma.task.findMany({
             where: { projectId, companyId },
-            orderBy: { updatedAt: "desc" },
+            orderBy: { order: "asc" },
             include: {
                 assignee: {
                     select: { id: true, name: true, email: true },
@@ -80,6 +90,63 @@ export class TaskService {
             DONE: kanbanStructure.DONE || [],
         };
     }
+
+    async updatePosition(taskId: string, newStatus: TaskStatus, newIndex: number) {
+        const task = await prisma.task.findUnique({ where: { id: taskId } });
+        if (!task) throw new AppError("Task not found", 404);
+    
+        const oldStatus = task.status;
+        const projectId = task.projectId;
+    
+        return await prisma.$transaction(async (tx) => {
+          if (oldStatus !== newStatus) {
+            await tx.task.updateMany({
+              where: {
+                projectId,
+                status: oldStatus,
+                order: { gt: task.order },
+              },
+              data: { order: { decrement: 1 } },
+            });
+            
+            await tx.task.updateMany({
+              where: {
+                projectId,
+                status: newStatus,
+                order: { gte: newIndex },
+              },
+              data: { order: { increment: 1 } },
+            });
+          } else {
+            if (task.order < newIndex) {
+               await tx.task.updateMany({
+                 where: {
+                   projectId,
+                   status: oldStatus,
+                   order: { gt: task.order, lte: newIndex }
+                 },
+                 data: { order: { decrement: 1 } }
+               });
+            } 
+            else if (task.order > newIndex) {
+               await tx.task.updateMany({
+                 where: {
+                   projectId,
+                   status: oldStatus,
+                   order: { gte: newIndex, lt: task.order }
+                 },
+                 data: { order: { increment: 1 } }
+               });
+            }
+          }
+          const updated = await tx.task.update({
+            where: { id: taskId },
+            data: { status: newStatus, order: newIndex },
+          });
+    
+          return updated;
+        });
+      }
 
     async update({ taskId, companyId, title, description, status, assigneeId }: UpdateTaskDTO) {
         const task = await prisma.task.findFirst({

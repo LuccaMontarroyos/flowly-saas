@@ -14,3 +14,31 @@ export interface User {
     companyId: string;
     createdAt: string;
   }
+
+  export enum TaskStatus {
+    TODO = "TODO",
+    IN_PROGRESS = "IN_PROGRESS",
+    DONE = "DONE",
+  }
+
+  export interface Task {
+    id: string;
+    title: string;
+    description: string | null;
+    status: TaskStatus;
+    projectId: string;
+    assigneeId: string | null;
+    assignee?: {
+      id: string;
+      name: string;
+      email: string;
+    } | null;
+    order: number;
+    createdAt: string;
+  }
+
+  export interface KanbanBoardData {
+    TODO: Task[];
+    IN_PROGRESS: Task[];
+    DONE: Task[];
+  }
