@@ -1,15 +1,16 @@
-"use client"; // Importante ser client
+"use client";
 
 import { Task, TaskStatus } from "@/types";
 import { KanbanCard } from "./kanban-card";
 import { Plus, Circle, CheckCircle2, Loader } from "lucide-react";
-import { Droppable } from "@hello-pangea/dnd"; // <--- Import
+import { Droppable } from "@hello-pangea/dnd";
 
 interface KanbanColumnProps {
   status: TaskStatus;
   tasks: Task[];
   color: string;
-  onTaskClick: (task: Task) => void; // <--- Prop para clique
+  onTaskClick: (task: Task) => void;
+  onAddClick: (status: TaskStatus) => void;
 }
 
 const statusConfig = {
@@ -18,13 +19,12 @@ const statusConfig = {
   [TaskStatus.DONE]: { label: "Done", icon: CheckCircle2 },
 };
 
-export function KanbanColumn({ status, tasks, color, onTaskClick }: KanbanColumnProps) {
+export function KanbanColumn({ status, tasks, color, onTaskClick, onAddClick }: KanbanColumnProps) {
   const config = statusConfig[status];
   const Icon = config.icon;
 
   return (
     <div className="flex flex-col w-[320px] h-full shrink-0">
-      {/* Header (Sem mudanças) */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
           <Icon size={18} className={color} />
@@ -35,12 +35,10 @@ export function KanbanColumn({ status, tasks, color, onTaskClick }: KanbanColumn
             {tasks.length}
           </span>
         </div>
-        <button className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+        <button onClick={() => onAddClick(status)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
           <Plus size={18} />
         </button>
       </div>
-
-      {/* Área Droppable */}
       <Droppable droppableId={status}>
         {(provided, snapshot) => (
           <div

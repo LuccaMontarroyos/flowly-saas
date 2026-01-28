@@ -12,13 +12,17 @@ import { createTask } from "@/services/tasks";
 import { TaskStatus } from "@/types";
 import { useEffect } from "react";
 
+import { getCompanyUsers } from "@/services/users";
+import { useQuery } from "@tanstack/react-query"
+
 interface CreateTaskDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     projectId: string;
+    defaultStatus?: TaskStatus;
 }
 
-export function CreateTaskDialog({ open, onOpenChange, projectId }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, projectId, defaultStatus }: CreateTaskDialogProps) {
     const queryClient = useQueryClient();
 
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CreateTaskForm>({
@@ -26,19 +30,26 @@ export function CreateTaskDialog({ open, onOpenChange, projectId }: CreateTaskDi
         defaultValues: {
             title: "",
             description: "",
-            status: TaskStatus.TODO
+            status: TaskStatus.TODO,
+            assigneeId: ""
         }
+    });
+
+    const { data: users } = useQuery({
+        queryKey: ["users"],
+        queryFn: getCompanyUsers,
+        staleTime: 1000 * 60 * 5,
     });
 
     useEffect(() => {
         if (open) {
             reset({
-              title: "",
-              description: "",
-              status: TaskStatus.TODO
+                title: "",
+                description: "",
+                status: defaultStatus || TaskStatus.TODO
             });
-          }
-    }, [open, reset])
+        }
+    }, [open, defaultStatus, reset])
 
     const onSubmit = async (data: CreateTaskForm) => {
         try {
@@ -79,16 +90,32 @@ export function CreateTaskDialog({ open, onOpenChange, projectId }: CreateTaskDi
                             placeholder="Describe the issue in detail..."
                         />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Initial Status</label>
-                        <select
-                            {...register("status")}
-                            className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
-                        >
-                            <option value={TaskStatus.TODO}>To Do</option>
-                            <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
-                            <option value={TaskStatus.DONE}>Done</option>
-                        </select>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Initial Status</label>
+                            <select
+                                {...register("status")}
+                                className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+                            >
+                                <option value={TaskStatus.TODO}>To Do</option>
+                                <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
+                                <option value={TaskStatus.DONE}>Done</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Assignee</label>
+                            <select
+                                {...register("assigneeId")}
+                                className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+                            >
+                                <option value="">Unassigned</option>
+                                {users?.map(user => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <DialogFooter>

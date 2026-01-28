@@ -22,6 +22,7 @@ export default function ProjectDetailsPage() {
     const queryClient = useQueryClient();
 
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+    const [createTaskStatus, setCreateTaskStatus] = useState<TaskStatus>(TaskStatus.TODO);
 
     const [localBoardData, setLocalBoardData] = useState<KanbanBoardData | null>(null);
 
@@ -44,6 +45,16 @@ export default function ProjectDetailsPage() {
             setLocalBoardData(serverBoardData);
         }
     }, [serverBoardData]);
+
+    const openCreateModal = () => {
+        setCreateTaskStatus(TaskStatus.TODO);
+        setIsCreateTaskOpen(true);
+    };
+
+    const handleAddFromColumn = (status: TaskStatus) => {
+        setCreateTaskStatus(status);
+        setIsCreateTaskOpen(true);
+    }
 
     const onDragEnd = async (result: DropResult) => {
         const { destination, source, draggableId } = result;
@@ -142,7 +153,7 @@ export default function ProjectDetailsPage() {
                             </button>
                         </div>
                         <button
-                            onClick={() => setIsCreateTaskOpen(true)}
+                            onClick={openCreateModal}
                             className="h-9 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-primary/20"
                         >
                             <Plus size={18} /> New Issue
@@ -158,19 +169,22 @@ export default function ProjectDetailsPage() {
                                 status={TaskStatus.TODO}
                                 tasks={localBoardData.TODO}
                                 color="text-zinc-400"
-                                onTaskClick={handleTaskClick} // <--- Passando o click
+                                onTaskClick={handleTaskClick}
+                                onAddClick={handleAddFromColumn}
                             />
                             <KanbanColumn
                                 status={TaskStatus.IN_PROGRESS}
                                 tasks={localBoardData.IN_PROGRESS}
                                 color="text-blue-500"
                                 onTaskClick={handleTaskClick}
+                                onAddClick={handleAddFromColumn}
                             />
                             <KanbanColumn
                                 status={TaskStatus.DONE}
                                 tasks={localBoardData.DONE}
                                 color="text-emerald-500"
                                 onTaskClick={handleTaskClick}
+                                onAddClick={handleAddFromColumn}
                             />
                         </div>
                     </main>
@@ -188,12 +202,13 @@ export default function ProjectDetailsPage() {
                 open={isCreateTaskOpen}
                 onOpenChange={setIsCreateTaskOpen}
                 projectId={projectId}
+                defaultStatus={createTaskStatus}
             />
-            <EditTaskDialog 
-            task={selectedTask}
-            open={!!selectedTask}
-            onOpenChange={(open) => !open && setSelectedTask(null)}
-       />
+            <EditTaskDialog
+                task={selectedTask}
+                open={!!selectedTask}
+                onOpenChange={(open) => !open && setSelectedTask(null)}
+            />
         </div>
     );
 }

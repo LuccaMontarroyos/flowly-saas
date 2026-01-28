@@ -44,4 +44,15 @@ export class UserService {
       tempPassword,
     };
   }
+
+  async listByCompany(companyId: string) {
+    return await prisma.user.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+  }
 }

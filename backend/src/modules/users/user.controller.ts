@@ -33,4 +33,14 @@ export class UserController {
       next(error);
     }
   };
+
+  index = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { companyId } = req.user;
+      const users = await this.userService.listByCompany(companyId);
+      return res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
