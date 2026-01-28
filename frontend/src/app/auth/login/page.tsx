@@ -1,43 +1,23 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { api } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import { loginSchema } from "@/modules/auth/auth.schema";
 import { LoginForm } from "@/modules/auth/auth.types";
-
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const { loginUser, isLoading } = useAuth();
+
     const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
     });
 
-    const onSubmit = async (data: LoginForm) => {
-        try {
-            setLoading(true);
-            const response = await api.post("/auth/login", data);
-            localStorage.setItem("flowly-token", response.data.token);
-            toast.success("Successfully authenticated!", {
-                description: `Welcome back to Flowly`,
-                className: "bg-green-500 text-white border-none",
-            })
-            router.push("/dashboard");
-        } catch (error: any) {
-            toast.error("Registration failed", {
-                description: error.response?.data?.message || "Something went wrong.",
-            });
-        } finally {
-            setLoading(false);
-        }
+    const onSubmit = (data: LoginForm) => {
+        loginUser(data);
     };
 
     return (
@@ -79,11 +59,11 @@ export default function LoginPage() {
                 <div className="pt-2">
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={isLoading}
                         className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {loading ? "Logging in..." : "Log In"}
-                        {!loading && <ArrowRight size={18} />}
+                        {isLoading ? "Logging in..." : "Log In"}
+                        {!isLoading && <ArrowRight size={18} />}
                     </button>
                 </div>
 

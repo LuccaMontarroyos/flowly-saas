@@ -5,39 +5,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Building2, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { api } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { registerSchema } from "@/modules/auth/auth.schema";
 import { RegisterForm } from "@/modules/auth/auth.types";
-import { toast } from "sonner";
-
+import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+
+    const { registerUser, isLoading } = useAuth();
+
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
         resolver: zodResolver(registerSchema),
     });
 
-    const onSubmit = async (data: RegisterForm) => {
-        try {
-            setLoading(true);
-            const response = await api.post("/auth/register", data);
-            localStorage.setItem("flowly-token", response.data.token);
-
-            toast.success("Account created!", {
-                description: `Welcome to Flowly, ${data.name}`,
-                className: "bg-green-500 text-white border-none",
-            })
-            router.push("/dashboard");
-        } catch (error: any) {
-            toast.error("Registration failed", {
-                description: error.response?.data?.message || "Something went wrong.",
-            });
-        } finally {
-            setLoading(false);
-        }
+    const onSubmit = (data: RegisterForm) => {
+        registerUser(data);
     };
 
     return (
@@ -109,11 +90,11 @@ export default function RegisterPage() {
                 <div className="pt-2">
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={isLoading}
                         className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {loading ? "Creating..." : "Get Started"}
-                        {!loading && <ArrowRight size={18} />}
+                        {isLoading ? "Creating..." : "Get Started"}
+                        {!isLoading && <ArrowRight size={18} />}
                     </button>
                 </div>
 
