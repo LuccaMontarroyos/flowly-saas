@@ -32,6 +32,7 @@ export class ProjectService {
                 name,
                 description,
                 companyId,
+                ownerId
             },
         });
 
