@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getProjects } from "@/services/projects";
 import { ProjectCard } from "@/components/projects/project-card";
 import { Plus, Search, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 
 export default function DashboardPage() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  
   const { data, isLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: () => getProjects(),
@@ -14,16 +18,19 @@ export default function DashboardPage() {
 
   return (
     <>
-      <header className="flex-shrink-0 px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-950 border-b border-border">
+      <header className="flex-shrink-0 px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Projects</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage and track your team's initiatives</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Projects</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage and track your team's initiatives</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="bg-white border border-border text-zinc-600 hover:bg-zinc-50 h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
+          <button className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
             <Filter size={16} /> Filter
           </button>
-          <button className="bg-primary hover:bg-primary/90 text-white h-9 px-4 rounded-lg flex items-center gap-2 text-sm font-medium transition-all shadow-sm">
+          <button 
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-white h-9 px-4 rounded-lg flex items-center gap-2 text-sm font-medium transition-all shadow-sm"
+          >
             <Plus size={16} /> New Project
           </button>
         </div>
@@ -35,7 +42,7 @@ export default function DashboardPage() {
             <Search className="text-zinc-400" size={18} />
           </div>
           <input 
-            className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+            className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
             placeholder="Search projects..." 
             type="text"
           />
@@ -55,15 +62,20 @@ export default function DashboardPage() {
               <ProjectCard key={project.id} project={project} />
             ))}
             
-            <button className="group relative border-2 border-dashed border-border hover:border-primary rounded-xl p-5 flex flex-col items-center justify-center h-[200px] transition-all bg-transparent hover:bg-primary/5">
-              <div className="size-12 rounded-full bg-zinc-100 group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors">
+            <button 
+                onClick={() => setIsCreateOpen(true)}
+                className="group relative border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-primary rounded-xl p-5 flex flex-col items-center justify-center h-[200px] transition-all bg-transparent hover:bg-primary/5 cursor-pointer"
+            >
+              <div className="size-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors">
                 <Plus className="text-zinc-400 group-hover:text-primary" size={24} />
               </div>
-              <span className="text-sm font-medium text-zinc-600 group-hover:text-primary transition-colors">Create new project</span>
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-primary transition-colors">Create new project</span>
             </button>
           </div>
         )}
       </div>
+
+      <CreateProjectDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
 }

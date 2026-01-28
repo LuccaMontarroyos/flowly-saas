@@ -2,7 +2,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    avatarUrl?: string; // Opcional por enquanto
+    avatarUrl?: string;
   }
   
   export interface Project {
@@ -11,5 +11,6 @@ export interface User {
     description: string | null;
     taskCount: number;
     ownerId: string;
+    companyId: string;
     createdAt: string;
   }

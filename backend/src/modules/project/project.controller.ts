@@ -36,18 +36,18 @@ export class ProjectController {
         try {
 
             const querySchema = z.object({
-                page: z.string().optional().transform(Number).or(z.number().optional()),
-                limit: z.string().optional().transform(Number).or(z.number().optional()),
+                page: z.coerce.number().min(1).default(1),
+                limit: z.coerce.number().min(1).max(100).default(10),
                 search: z.string().optional(),
-            });
+              });
 
             const { page, limit, search } = querySchema.parse(req.query);
             const { companyId } = req.user;
 
             const result = await this.projectService.list({
                 companyId,
-                page: page as number,
-                limit: limit as number,
+                page,
+                limit,
                 search,
             });
 

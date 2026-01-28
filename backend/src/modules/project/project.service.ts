@@ -40,7 +40,7 @@ export class ProjectService {
     }
 
     async list({ companyId, page = 1, limit = 10, search }: ListProjectsDTO) {
-        const skip = (page - 1) * limit;
+        const skip = Math.max(0, (page - 1) * limit) || 0;
 
         const whereCondition = {
             companyId,
@@ -74,7 +74,7 @@ export class ProjectService {
                 page,
                 limit,
                 total,
-                totalPages: Math.ceil(total / limit),
+                totalPages: Math.ceil(total / limit) || 1,
             },
         };
     }
