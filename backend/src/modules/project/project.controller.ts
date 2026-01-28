@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ProjectService } from "./project.service";
 import { z } from "zod";
+import { xContentTypeOptions } from "helmet";
 
 export class ProjectController {
     private projectService: ProjectService;
@@ -57,10 +58,27 @@ export class ProjectController {
         }
     };
 
+    show = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const paramsSchema = z.object({
+                id: z.uuid()
+            })
+
+            const { id } = paramsSchema.parse(req.params);
+            const { companyId } = req.user;
+
+            const project = await this.projectService.findById(id, companyId);
+
+            return res.json(project);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     update = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const paramsSchema = z.object({
-                id: z.string().uuid(),
+                id: z.uuid(),
             });
             const bodySchema = z.object({
                 name: z.string().min(3).optional(),

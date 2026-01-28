@@ -100,6 +100,21 @@ export class ProjectService {
         return updatedProject;
     }
 
+    async findById(projectId: string, companyId: string) {
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                companyId
+            }
+        });
+
+        if (!project) {
+            throw new AppError("Project not found or access denied", 404);
+        }
+
+        return project;
+    }
+
     async delete(projectId: string, companyId: string) {
 
         const project = await prisma.project.findFirst({

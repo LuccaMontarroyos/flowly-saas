@@ -30,6 +30,11 @@ export const createProject = async (data: ProjectForm) => {
   return response.data;
 };
 
+export const getProjectById = async (id: string) => {
+  const response = await api.get<Project>(`/projects/${id}`);
+  return response.data;
+}
+
 export const updateProject = async (id: string, data: ProjectForm) => {
   const response = await api.put<Project>(`/projects/${id}`, data);
   return response.data;
