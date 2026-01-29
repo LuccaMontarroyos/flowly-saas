@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { TaskService } from "./task.service";
 import { z } from "zod";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus, Priority } from "@prisma/client";
 
 export class TaskController {
   private taskService: TaskService;
@@ -18,9 +18,10 @@ export class TaskController {
         projectId: z.uuid(),
         assigneeId: z.uuid().optional(),
         status: z.enum(TaskStatus),
+        priority: z.enum(Priority).optional(),
       });
 
-      const { title, description, projectId, assigneeId, status } = schema.parse(req.body);
+      const { title, description, projectId, assigneeId, status, priority } = schema.parse(req.body);
       const { companyId } = req.user;
 
       const task = await this.taskService.create({
@@ -29,7 +30,8 @@ export class TaskController {
         projectId,
         companyId,
         assigneeId,
-        status
+        status,
+        priority
       });
 
       return res.status(201).json(task);
@@ -79,12 +81,13 @@ export class TaskController {
       const bodySchema = z.object({
         title: z.string().optional(),
         description: z.string().optional(),
-        status: z.nativeEnum(TaskStatus).optional(),
-        assigneeId: z.string().uuid().nullable().optional(),
+        status: z.enum(TaskStatus).optional(),
+        assigneeId: z.uuid().nullable().optional(),
+        priority: z.enum(Priority).optional()
       });
 
       const { id } = paramsSchema.parse(req.params);
-      const { title, description, status, assigneeId } = bodySchema.parse(req.body);
+      const { title, description, status, assigneeId, priority } = bodySchema.parse(req.body);
       const { companyId } = req.user;
 
       const updatedTask = await this.taskService.update({
@@ -94,6 +97,7 @@ export class TaskController {
         description,
         status,
         assigneeId: assigneeId === null ? undefined : assigneeId,
+        priority
       });
 
       return res.json(updatedTask);

@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { editTaskSchema } from "@/modules/tasks/task.schema";
 import { EditTaskForm } from "@/modules/tasks/task.types";
 import { getCompanyUsers } from "@/services/users";
-import { User } from "@/types";
+import { Priority } from "@/types";
 
 interface EditTaskDialogProps {
     task: Task | null;
@@ -39,6 +39,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                 title: task.title,
                 description: task.description || "",
                 status: task.status,
+                priority: task.priority,
                 assigneeId: task.assigneeId || "",
             });
         }
@@ -98,7 +99,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                             className="flex min-h-[120px] w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none transition-all resize-y"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Status</label>
                             <select
@@ -108,6 +109,17 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                                 <option value={TaskStatus.TODO}>To Do</option>
                                 <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
                                 <option value={TaskStatus.DONE}>Done</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Priority</label>
+                            <select
+                                {...register("priority")}
+                                className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+                            >
+                                <option value={Priority.LOW}>Low</option>
+                                <option value={Priority.MEDIUM}>Medium</option>
+                                <option value={Priority.HIGH}>High</option>
                             </select>
                         </div>
                         <div className="space-y-2">

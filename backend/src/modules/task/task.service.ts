@@ -1,6 +1,6 @@
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus, Priority } from "@prisma/client";
 
 interface CreateTaskDTO {
     title: string;
@@ -9,6 +9,7 @@ interface CreateTaskDTO {
     companyId: string;
     assigneeId?: string;
     status: TaskStatus
+    priority?: Priority;
 }
 
 interface UpdateTaskDTO {
@@ -18,11 +19,12 @@ interface UpdateTaskDTO {
     description?: string;
     status?: TaskStatus;
     assigneeId?: string;
+    priority?: Priority;
 }
 
 export class TaskService {
 
-    async create({ title, description, projectId, companyId, assigneeId, status }: CreateTaskDTO) {
+    async create({ title, description, projectId, companyId, assigneeId, status, priority }: CreateTaskDTO) {
 
         
         const project = await prisma.project.findFirst({
@@ -49,6 +51,7 @@ export class TaskService {
                 title,
                 description,
                 status,
+                priority: priority || "LOW",
                 projectId,
                 companyId,
                 assigneeId,
@@ -148,7 +151,7 @@ export class TaskService {
         });
       }
 
-    async update({ taskId, companyId, title, description, status, assigneeId }: UpdateTaskDTO) {
+    async update({ taskId, companyId, title, description, status, assigneeId, priority }: UpdateTaskDTO) {
         const task = await prisma.task.findFirst({
             where: { id: taskId, companyId },
         });
@@ -168,6 +171,7 @@ export class TaskService {
                 description,
                 status,
                 assigneeId,
+                priority,
             },
             include: {
                 assignee: { select: { id: true, name: true, email: true } },

@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createTaskSchema } from "@/modules/tasks/task.schema";
 import { CreateTaskForm } from "@/modules/tasks/task.types";
 import { createTask } from "@/services/tasks";
-import { TaskStatus } from "@/types";
+import { TaskStatus, Priority } from "@/types";
 import { useEffect } from "react";
 
 import { getCompanyUsers } from "@/services/users";
@@ -30,8 +30,9 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, defaultStatus 
         defaultValues: {
             title: "",
             description: "",
+            priority: Priority.LOW,
             status: TaskStatus.TODO,
-            assigneeId: ""
+            assigneeId: "",
         }
     });
 
@@ -46,7 +47,9 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, defaultStatus 
             reset({
                 title: "",
                 description: "",
-                status: defaultStatus || TaskStatus.TODO
+                status: defaultStatus || TaskStatus.TODO,
+                priority: Priority.LOW,
+                assigneeId: ""
             });
         }
     }, [open, defaultStatus, reset])
@@ -90,7 +93,7 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, defaultStatus 
                             placeholder="Describe the issue in detail..."
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Initial Status</label>
                             <select
@@ -100,6 +103,17 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, defaultStatus 
                                 <option value={TaskStatus.TODO}>To Do</option>
                                 <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
                                 <option value={TaskStatus.DONE}>Done</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Priority</label>
+                            <select
+                                {...register("priority")}
+                                className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+                            >
+                                <option value={Priority.LOW}>Low</option>
+                                <option value={Priority.MEDIUM}>Medium</option>
+                                <option value={Priority.HIGH}>High</option>
                             </select>
                         </div>
                         <div className="space-y-2">

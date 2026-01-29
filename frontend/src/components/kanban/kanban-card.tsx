@@ -4,6 +4,7 @@ import { Task } from "@/types";
 import { Flag, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Draggable } from "@hello-pangea/dnd";
+import { PriorityBadge } from "./priority-badge";
 
 interface KanbanCardProps {
   task: Task;
@@ -31,7 +32,7 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
             <span className="text-xs font-mono text-zinc-400 group-hover:text-primary transition-colors">
               FLO-{task.id.slice(0, 4)}
             </span>
-            <Flag size={14} className="text-zinc-300" />
+            <PriorityBadge priority={task.priority} />
           </div>
 
           <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2">

@@ -94,6 +94,8 @@ model Task {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  priority Priority @default(LOW)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -101,4 +103,10 @@ model Task {
   @@index([projectId])
   @@index([assigneeId])
   @@map("tasks")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }
