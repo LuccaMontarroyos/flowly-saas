@@ -29,3 +29,12 @@ export const getCompanyUsers = async (page = 1, search = "", limit = 5) => {
   });
   return response.data;
 };
+
+export const updateUserRole = async (userId: string, role: UserRole) => {
+  const response = await api.patch(`/users/${userId}/role`, { role });
+  return response.data;
+};
+
+export const removeUser = async (userId: string) => {
+  await api.delete(`/users/${userId}`);
+};

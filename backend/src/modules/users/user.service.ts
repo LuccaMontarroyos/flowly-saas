@@ -3,7 +3,6 @@ import { AppError } from "../../shared/errors/AppError";
 import argon2 from "argon2";
 import { Role } from "@prisma/client";
 import crypto from "crypto";
-import { skip } from "@prisma/client/runtime/library";
 
 interface CreateMemberDTO {
   name: string;
@@ -94,5 +93,30 @@ export class UserService {
         totalPages,
       },
     };
+  }
+
+  async updateRole(userId: string, newRole: Role, requestorId: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError("User not found", 404);
+
+    if (userId === requestorId) {
+        throw new AppError("You cannot change your own role", 400);
+    }
+
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { role: newRole },
+    });
+  }
+
+  async remove(userId: string, requestorId: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError("User not found", 404);
+
+    if (userId === requestorId) {
+        throw new AppError("You cannot remove yourself", 400);
+    }
+    
+    await prisma.user.delete({ where: { id: userId } });
   }
 }

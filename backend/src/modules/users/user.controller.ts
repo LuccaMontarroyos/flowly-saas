@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService } from "./user.service";
 import { z } from "zod";
+import { Role } from "@prisma/client";
 
 export class UserController {
   private userService: UserService;
@@ -55,6 +56,35 @@ export class UserController {
       return res.json(result);
     } catch (error) {
       next(error);
+    }
+  };
+
+  updateRole = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const paramsSchema = z.object({ id: z.uuid() });
+        const bodySchema = z.object({ role: z.enum(Role) });
+
+        const { id } = paramsSchema.parse(req.params);
+        const { role } = bodySchema.parse(req.body);
+        const requestorId = req.user.id;
+
+        const user = await this.userService.updateRole(id, role, requestorId);
+        return res.json(user);
+    } catch (error) {
+        next(error);
+    }
+  };
+
+  remove = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const paramsSchema = z.object({ id: z.string().uuid() });
+        const { id } = paramsSchema.parse(req.params);
+        const requestorId = req.user.id;
+
+        await this.userService.remove(id, requestorId);
+        return res.status(204).send();
+    } catch (error) {
+        next(error);
     }
   };
 }
