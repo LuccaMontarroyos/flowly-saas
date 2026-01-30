@@ -36,9 +36,23 @@ export class UserController {
 
   index = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const querySchema = z.object({
+        page: z.string().optional().default("1").transform(Number),
+        limit: z.string().optional().default("10").transform(Number),
+        search: z.string().optional(),
+      });
+
+      const { page, limit, search } = querySchema.parse(req.query);
       const { companyId } = req.user;
-      const users = await this.userService.listByCompany(companyId);
-      return res.json(users);
+
+      const result = await this.userService.listByCompany({
+        companyId,
+        page,
+        limit,
+        search,
+      });
+
+      return res.json(result);
     } catch (error) {
       next(error);
     }

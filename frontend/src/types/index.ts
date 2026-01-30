@@ -2,6 +2,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  role: UserRole;
+  createdAt: string;
+  companyId: string;
   avatarUrl?: string;
 }
 
@@ -48,4 +51,9 @@ export enum Priority {
   LOW = "LOW",
   MEDIUM = "MEDIUM",
   HIGH = "HIGH",
+}
+
+export enum UserRole {
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
 }
