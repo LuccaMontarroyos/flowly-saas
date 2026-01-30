@@ -10,14 +10,14 @@ import { LoginForm } from "@/modules/auth/auth.types";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-    const { loginUser, isLoading } = useAuth();
+    const { signIn, isLoading } = useAuth();
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
     });
 
-    const onSubmit = (data: LoginForm) => {
-        loginUser(data);
+    const onSubmit = async (data: LoginForm) => {
+        await signIn(data);
     };
 
     return (

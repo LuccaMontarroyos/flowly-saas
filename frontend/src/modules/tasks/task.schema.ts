@@ -5,7 +5,7 @@ export const createTaskSchema = z.object({
   title: z.string().min(3, "Title is required"),
   description: z.string().optional(),
   status: z.enum(TaskStatus),
-  priority: z.enum(Priority).default(Priority.LOW),
+  priority: z.enum(Priority),
   assigneeId: z.uuid().optional().or(z.literal("")),
 });
 

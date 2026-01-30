@@ -100,7 +100,7 @@ export class UserService {
     if (!user) throw new AppError("User not found", 404);
 
     if (userId === requestorId) {
-        throw new AppError("You cannot change your own role", 400);
+      throw new AppError("You cannot change your own role", 400);
     }
 
     return await prisma.user.update({
@@ -108,15 +108,35 @@ export class UserService {
       data: { role: newRole },
     });
   }
+  
+  async getProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        companyId: true,
+        // avatarUrl: true, 
+      },
+    });
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    return user;
+  }
 
   async remove(userId: string, requestorId: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new AppError("User not found", 404);
 
     if (userId === requestorId) {
-        throw new AppError("You cannot remove yourself", 400);
+      throw new AppError("You cannot remove yourself", 400);
     }
-    
+
     await prisma.user.delete({ where: { id: userId } });
   }
 }

@@ -27,11 +27,13 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
         resolver: zodResolver(editTaskSchema),
     });
 
-    const { data: users } = useQuery({
-        queryKey: ["users"],
-        queryFn: getCompanyUsers,
+    const { data: usersData } = useQuery({
+        queryKey: ["users-list-all"],
+        queryFn: () => getCompanyUsers(1, "", 50),
         staleTime: 1000 * 60 * 5,
     });
+
+    const users = usersData?.data || [];
 
     useEffect(() => {
         if (task && open) {
@@ -129,7 +131,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                                 className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
                             >
                                 <option value="">Unassigned</option>
-                                {users?.map(user => (
+                                {users.map(user => (
                                     <option key={user.id} value={user.id}>
                                         {user.name}
                                     </option>

@@ -10,15 +10,13 @@ import { RegisterForm } from "@/modules/auth/auth.types";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
-
-    const { registerUser, isLoading } = useAuth();
-
+    const { register: createAccount, isLoading } = useAuth();
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
         resolver: zodResolver(registerSchema),
     });
 
-    const onSubmit = (data: RegisterForm) => {
-        registerUser(data);
+    const onSubmit = async (data: RegisterForm) => {
+        await createAccount(data);
     };
 
     return (

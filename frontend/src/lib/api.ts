@@ -1,17 +1,26 @@
 import axios from 'axios';
+import { parseCookies, destroyCookie } from "nookies";
+
+const { "flowly.token": token } = parseCookies();
 
 export const api = axios.create({
   baseURL: 'http://localhost:3000/api/v1',
 });
 
+if (token) {
+  api.defaults.headers["Authorization"] = `Bearer ${token}`;
+}
 
-api.interceptors.request.use((config) => {
-    
-  const token = typeof window !== 'undefined' ? localStorage.getItem('flowly-token') : null;
-  
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  
-  return config;
-});
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        destroyCookie(undefined, "flowly.token");
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  });

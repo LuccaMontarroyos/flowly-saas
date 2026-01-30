@@ -15,6 +15,7 @@ userRoutes.post(
   userController.store
 );
 userRoutes.patch("/:id/role", ensureAuthenticated, ensureAdmin, userController.updateRole);
+userRoutes.get("/me", ensureAuthenticated, userController.profile);
 userRoutes.delete("/:id", ensureAuthenticated, ensureAdmin, userController.remove);
 
 export { userRoutes };

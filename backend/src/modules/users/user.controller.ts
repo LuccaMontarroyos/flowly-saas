@@ -75,6 +75,18 @@ export class UserController {
     }
   };
 
+  profile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user.id;
+      
+      const user = await this.userService.getProfile(userId);
+
+      return res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const paramsSchema = z.object({ id: z.string().uuid() });

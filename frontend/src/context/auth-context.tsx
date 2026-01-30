@@ -1,0 +1,122 @@
+"use client";
+
+import { createContext, useEffect, useState, ReactNode } from "react";
+import { setCookie, parseCookies, destroyCookie } from "nookies";
+import { useRouter, usePathname } from "next/navigation";
+import { api } from "@/lib/api";
+import { UserRole } from "@/types"; 
+import { toast } from "sonner";
+import { LoginForm, RegisterForm } from "@/modules/auth/auth.types";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  companyId: string;
+}
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: User | null;
+  isLoading: boolean;
+  signIn: (data: LoginForm) => Promise<void>;
+  register: (data: RegisterForm) => Promise<void>;
+  signOut: () => void;
+}
+
+export const AuthContext = createContext({} as AuthContextType);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isAuthenticated = !!user;
+
+  
+  useEffect(() => {
+    const { "flowly.token": token } = parseCookies();
+
+    if (token) {
+      api.get("/users/me")
+        .then((response) => {
+          setUser(response.data);
+        })
+        .catch(() => {
+          signOut();
+        })
+        .finally(() => {
+            setIsLoading(false);
+        });
+    } else {
+        setIsLoading(false);
+    }
+  }, []);
+
+  async function signIn({ email, password }: LoginForm) {
+    try {
+      const response = await api.post("/auth/login", { email, password });
+      const { token, user } = response.data;
+
+      setCookie(undefined, "flowly.token", token, {
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+      });
+
+      api.defaults.headers["Authorization"] = `Bearer ${token}`;
+      setUser(user);
+      
+      toast.success("Welcome back!", {
+         description: "You have successfully logged in.",
+         className: "bg-green-500 text-white border-none"
+      });
+
+      router.push("/dashboard");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Invalid credentials.";
+      toast.error("Access denied", { description: errorMessage });
+      throw error;
+    }
+  }
+
+  async function register(data: RegisterForm) {
+    try {
+      const response = await api.post("/auth/register", data);
+      const { token, user } = response.data;
+      if (token) {
+          setCookie(undefined, "flowly.token", token, {
+            maxAge: 60 * 60 * 24 * 30,
+            path: "/",
+          });
+          api.defaults.headers["Authorization"] = `Bearer ${token}`;
+          setUser(user);
+      }
+
+      toast.success("Account created successfully!", {
+        description: `Welcome to Flowly, ${data.name}.`,
+        className: "bg-green-500 text-white border-none",
+      });
+
+      router.push("/dashboard");
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.message || "Registration failed.";
+        toast.error("Registration failed", { description: errorMessage });
+        throw error;
+    }
+  }
+
+  function signOut() {
+    destroyCookie(undefined, "flowly.token");
+    setUser(null);
+    router.push("/login");
+  }
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, signIn, register, signOut, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
