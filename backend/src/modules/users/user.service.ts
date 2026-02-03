@@ -3,11 +3,21 @@ import { AppError } from "../../shared/errors/AppError";
 import argon2 from "argon2";
 import { Role } from "@prisma/client";
 import crypto from "crypto";
+import { InviteService } from "../invite/invite.service";
+
 
 interface CreateMemberDTO {
   name: string;
   email: string;
   adminCompanyId: string;
+}
+
+interface RegisterUserDTO {
+  name: string;
+  email: string;
+  password: string;
+  companyName?: string;
+  inviteToken?: string;
 }
 
 interface ListUsersParams {
@@ -18,13 +28,59 @@ interface ListUsersParams {
 }
 
 export class UserService {
+  private inviteService = new InviteService();
 
-  async createMember({ name, email, adminCompanyId }: CreateMemberDTO) {
+  async register({ name, email, password, companyName, inviteToken }: RegisterUserDTO) {
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (userExists) {
+      throw new AppError("User already exists");
+    }
 
-    const userExists = await prisma.user.findUnique({
-      where: { email },
+    const hashedPassword = await argon2.hash(password);
+
+    let userCompanyId = "";
+    let userRole: Role = "ADMIN";
+
+    if (inviteToken) {
+        const invite = await this.inviteService.validateInvite(inviteToken);
+        
+        if (invite.email && invite.email !== email) {
+            throw new AppError("This invite is for a different email address", 403);
+        }
+
+        userCompanyId = invite.companyId;
+        userRole = invite.role;
+    } else {
+        if (!companyName) throw new AppError("Company name is required", 400);
+
+        const company = await prisma.company.create({
+            data: { name: companyName },
+        });
+        userCompanyId = company.id;
+        userRole = "ADMIN";
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: userRole,
+        companyId: userCompanyId,
+      },
     });
 
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId
+    };
+  }
+
+    async createMember({ name, email, adminCompanyId }: CreateMemberDTO) {
+    const userExists = await prisma.user.findUnique({ where: { email } });
     if (userExists) {
       throw new AppError("User already exists");
     }
@@ -37,11 +93,12 @@ export class UserService {
         name,
         email,
         password: hashedPassword,
-        role: Role.MEMBER,
+        role: "MEMBER",
         companyId: adminCompanyId,
       },
     });
 
+    console.log(`[EMAIL MOCK] Sending password ${tempPassword} to ${email}`);
 
     return {
       id: member.id,
@@ -86,12 +143,7 @@ export class UserService {
 
     return {
       data: users,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages,
-      },
+      meta: { page, limit, total, totalPages },
     };
   }
 
@@ -118,14 +170,10 @@ export class UserService {
         email: true,
         role: true,
         companyId: true,
-        // avatarUrl: true, 
       },
     });
 
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-
+    if (!user) throw new AppError("User not found", 404);
     return user;
   }
 

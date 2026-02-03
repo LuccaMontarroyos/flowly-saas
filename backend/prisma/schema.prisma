@@ -36,6 +36,7 @@ model Company {
   tasks    Task[]
 
   @@map("companies")
+  invites Invite[]
 }
 
 model User {
@@ -109,4 +110,17 @@ enum Priority {
   LOW
   MEDIUM
   HIGH
+}
+
+model Invite {
+  id        String   @id @default(uuid())
+  email     String?
+  token     String   @unique
+  role      Role @default(MEMBER)
+  
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId String
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
