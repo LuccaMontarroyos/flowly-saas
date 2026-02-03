@@ -57,6 +57,7 @@ model User {
 
   @@index([companyId])
   @@map("users")
+  comments Comment[]
 }
 
 model Project {
@@ -104,6 +105,7 @@ model Task {
   @@index([projectId])
   @@index([assigneeId])
   @@map("tasks")
+  comments Comment[]
 }
 
 enum Priority {
@@ -123,4 +125,18 @@ model Invite {
 
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+ 
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
