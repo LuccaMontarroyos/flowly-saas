@@ -14,7 +14,6 @@ export default function RegisterPage() {
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get("invite");
 
-    // Estado para guardar dados do convite (Nome da empresa)
     const [inviteData, setInviteData] = useState<{ company: { name: string } } | null>(null);
     const [isValidatingInvite, setIsValidatingInvite] = useState(!!inviteToken);
 
@@ -22,15 +21,12 @@ export default function RegisterPage() {
         resolver: zodResolver(registerSchema),
     });
 
-    // Valida o token ao carregar
     useEffect(() => {
         if (inviteToken) {
             setIsValidatingInvite(true);
             api.get(`/invites/${inviteToken}`)
                 .then(res => {
                     setInviteData(res.data);
-                    // Preenche um valor dummy no companyName para passar na validação do Zod frontend
-                    // O backend vai ignorar isso se tiver inviteToken
                     setValue("companyName", res.data.company.name);
                 })
                 .catch(() => {
@@ -41,7 +37,6 @@ export default function RegisterPage() {
     }, [inviteToken, setValue]);
 
     const onSubmit = async (data: RegisterForm) => {
-        // Adicionamos o token ao payload
         const payload = inviteToken ? { ...data, inviteToken } : data;
         await createAccount(payload);
     };
@@ -61,7 +56,6 @@ export default function RegisterPage() {
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-                {/* Se NÃO for convite, mostra campo de empresa. Se FOR, mostra aviso visual */}
                 {!inviteData ? (
                     <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-text-muted uppercase tracking-wider pl-1">Company Name</label>

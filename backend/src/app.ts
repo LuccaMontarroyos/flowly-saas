@@ -7,6 +7,7 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { userRoutes } from './modules/users/user.routes';
 import { projectRoutes } from './modules/project/project.routes'
 import { taskRoutes } from './modules/task/task.routes';
+import { dashboardRoutes } from './modules/dashboard/dashboard.routes';
 
 export class App {
     public app: Express;
@@ -36,6 +37,7 @@ export class App {
         this.app.use('/api/v1/users', userRoutes);
         this.app.use('/api/v1/projects', projectRoutes);
         this.app.use('/api/v1/tasks', taskRoutes);
+        this.app.use('/api/v1/dashboard', dashboardRoutes);
     }
 
     private exceptionHandler() {

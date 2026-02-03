@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function signOut() {
     destroyCookie(undefined, "flowly.token");
     setUser(null);
-    router.push("/login");
+    router.push("/auth/login");
   }
 
   return (

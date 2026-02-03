@@ -1,94 +1,207 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getProjects } from "@/services/projects";
-import { ProjectCard } from "@/components/projects/project-card";
-import { Plus, Search, Filter } from "lucide-react";
+import { getDashboardStats } from "@/services/dashboard";
+import { useAuth } from "@/hooks/use-auth";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Cell
+} from "recharts";
+import {
+    Briefcase,
+    CheckCircle2,
+    Users,
+    ArrowRight,
+    Layout,
+    Loader2
+} from "lucide-react";
+import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
-import { useDebounce } from "@/hooks/use-debounce";
+import { TaskStatus, Priority } from "@/types";
 
 export default function DashboardPage() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
-  
-  const { data, isLoading } = useQuery({
-    queryKey: ["projects", debouncedSearch], 
-    queryFn: () => getProjects(1, 100, debouncedSearch),
-  });
+    const { user } = useAuth();
 
-  return (
-    <>
-      <header className="flex-shrink-0 px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Projects</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage and track your team's initiatives</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 h-9 px-3 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-            <Filter size={16} /> Filter
-          </button>
-          <button 
-            onClick={() => setIsCreateOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-white h-9 px-4 rounded-lg flex items-center gap-2 text-sm font-medium transition-all shadow-sm"
-          >
-            <Plus size={16} /> New Project
-          </button>
-        </div>
-      </header>
+    const { data: stats, isLoading } = useQuery({
+        queryKey: ["dashboard-stats"],
+        queryFn: getDashboardStats,
+        staleTime: 1000 * 60 * 5,
+    });
 
-      <div className="flex-shrink-0 px-8 py-6">
-        <div className="relative max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="text-zinc-400" size={18} />
-          </div>
-          <input 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-            placeholder="Search projects..." 
-            type="text"
-          />
-        </div>
-      </div>
+    const chartData = stats ? [
+        { name: "To Do", total: stats.tasksDistribution[TaskStatus.TODO] || 0, color: "#94a3b8" },
+        { name: "In Progress", total: stats.tasksDistribution[TaskStatus.IN_PROGRESS] || 0, color: "#3b82f6" },
+        { name: "Done", total: stats.tasksDistribution[TaskStatus.DONE] || 0, color: "#22c55e" },
+    ] : [];
 
-      <div className="flex-1 overflow-y-auto px-8 pb-12">
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-             {[1,2,3,4].map(i => (
-               <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
-             ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {data?.data.length === 0 && search !== "" ? (
-                <div className="col-span-full text-center text-zinc-500 py-10">
-                    No projects found matching "{search}"
+    if (isLoading) {
+        return <DashboardSkeleton />;
+    }
+
+    return (
+        <div className="h-full overflow-y-auto bg-zinc-50 dark:bg-zinc-950 p-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+                <header>
+                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                        Good morning, {user?.name.split(" ")[0]}!
+                    </h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 mt-1">
+                        Here's what's happening with your projects today.
+                    </p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <StatCard
+                        title="Total Projects"
+                        total={stats?.overview.totalProjects || 0}
+                        icon={Briefcase}
+                        color="text-blue-500"
+                        bg="bg-blue-50 dark:bg-blue-900/20"
+                    />
+                    <StatCard
+                        title="Total Tasks"
+                        total={stats?.overview.totalTasks || 0}
+                        icon={CheckCircle2}
+                        color="text-purple-500"
+                        bg="bg-purple-50 dark:bg-purple-900/20"
+                    />
+                    <StatCard
+                        title="Team Members"
+                        total={stats?.overview.totalMembers || 0}
+                        icon={Users}
+                        color="text-emerald-500"
+                        bg="bg-emerald-50 dark:bg-emerald-900/20"
+                    />
                 </div>
-            ) : (
-                data?.data.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-                ))
-            )}
-            
-            {!search && (
-                <button 
-                    onClick={() => setIsCreateOpen(true)}
-                    className="group relative border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-primary rounded-xl p-5 flex flex-col items-center justify-center h-[200px] transition-all bg-transparent hover:bg-primary/5 cursor-pointer"
-                >
-                <div className="size-12 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-primary/10 flex items-center justify-center mb-3 transition-colors">
-                    <Plus className="text-zinc-400 group-hover:text-primary" size={24} />
-                </div>
-                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-primary transition-colors">Create new project</span>
-                </button>
-            )}
-          </div>
-        )}
-      </div>
 
-      <CreateProjectDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-    </>
-  );
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    <div className="lg:col-span-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">Task Status Distribution</h3>
+                        <div className="h-[300px] w-full">
+                            {stats?.overview.totalTasks === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+                                    <Layout size={32} className="mb-2 opacity-50" />
+                                    <p>No tasks data yet</p>
+                                </div>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f3f46" opacity={0.1} />
+                                        <XAxis
+                                            dataKey="name"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#71717a', fontSize: 12 }}
+                                            dy={10}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#71717a', fontSize: 12 }}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'transparent' }}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                        />
+                                        <Bar dataKey="total" radius={[4, 4, 0, 0]} barSize={50}>
+                                            {chartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Recent Tasks (1/3 width) */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">My Priorities</h3>
+                            <Link href="/dashboard/projects" className="text-xs font-medium text-primary hover:text-primary/80 flex items-center gap-1">
+                                View all <ArrowRight size={14} />
+                            </Link>
+                        </div>
+
+                        <div className="flex-1 space-y-4">
+                            {stats?.myRecentTasks.length === 0 ? (
+                                <div className="text-sm text-zinc-500 text-center py-10">
+                                    You have no pending tasks assigned.
+                                </div>
+                            ) : (
+                                stats?.myRecentTasks.map(task => (
+                                    <div key={task.id} className="group flex items-start justify-between p-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800">
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium text-zinc-900 dark:text-white line-clamp-1">{task.title}</p>
+                                            <p className="text-xs text-zinc-500 flex items-center gap-1.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                                                {task.project.name}
+                                            </p>
+                                        </div>
+                                        <PriorityBadge priority={task.priority} />
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StatCard({ title, total, icon: Icon, color, bg }: any) {
+    return (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${bg} ${color}`}>
+                <Icon size={24} />
+            </div>
+            <div>
+                <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{title}</p>
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">{total}</h2>
+            </div>
+        </div>
+    )
+}
+
+function PriorityBadge({ priority }: { priority: Priority }) {
+    const colors = {
+        [Priority.HIGH]: "bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30",
+        [Priority.MEDIUM]: "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30",
+        [Priority.LOW]: "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30",
+    };
+
+    return (
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[priority]} uppercase tracking-wider`}>
+            {priority}
+        </span>
+    );
+}
+
+function DashboardSkeleton() {
+    return (
+        <div className="p-8 max-w-6xl mx-auto space-y-8">
+            <div className="space-y-2">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-96" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Skeleton className="h-32 rounded-xl" />
+                <Skeleton className="h-32 rounded-xl" />
+                <Skeleton className="h-32 rounded-xl" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Skeleton className="h-80 rounded-xl lg:col-span-2" />
+                <Skeleton className="h-80 rounded-xl" />
+            </div>
+        </div>
+    )
 }
