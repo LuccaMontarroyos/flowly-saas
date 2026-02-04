@@ -2,7 +2,7 @@
 
 import { Task } from "@/types";
 import { Flag, User } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Draggable } from "@hello-pangea/dnd";
 import { PriorityBadge } from "./priority-badge";
 
@@ -45,15 +45,16 @@ export function KanbanCard({ task, index, onClick }: KanbanCardProps) {
                 Task
               </span>
             </div>
-            
+
             {task.assignee ? (
-                <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-[10px]">{task.assignee.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={task.assignee.avatarUrl || ""} />
+                <AvatarFallback className="text-[10px]">{task.assignee.name.charAt(0)}</AvatarFallback>
+              </Avatar>
             ) : (
-                <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400">
-                    <User size={12} />
-                </div>
+              <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400">
+                <User size={12} />
+              </div>
             )}
           </div>
         </div>

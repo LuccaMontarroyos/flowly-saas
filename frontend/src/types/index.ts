@@ -36,6 +36,7 @@ export interface Task {
     id: string;
     name: string;
     email: string;
+    avatarUrl?: string | null
   } | null;
   order: number;
   createdAt: string;

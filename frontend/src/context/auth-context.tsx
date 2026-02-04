@@ -12,6 +12,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string | null;
   role: UserRole;
   companyId: string;
 }
@@ -23,6 +24,7 @@ interface AuthContextType {
   signIn: (data: LoginForm) => Promise<void>;
   register: (data: RegisterForm) => Promise<void>;
   signOut: () => void;
+  updateUser: (data: Partial<User>) => void;
 }
 
 export const AuthContext = createContext({} as AuthContextType);
@@ -32,7 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
-  const pathname = usePathname();
 
   const isAuthenticated = !!user;
 
@@ -114,8 +115,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/auth/login");
   }
 
+  function updateUser(userData: Partial<User>) {
+    setUser((currentUser) => {
+        if (!currentUser) return null;
+        return { ...currentUser, ...userData };
+    });
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, signIn, register, signOut, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, signIn, register, signOut, isLoading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

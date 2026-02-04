@@ -13,6 +13,7 @@ userRoutes.get("/me", ensureAuthenticated, userController.profile);
 
 userRoutes.post("/member", ensureAuthenticated, ensureAdmin, userController.createMember);
 userRoutes.patch("/:id/role", ensureAuthenticated, ensureAdmin, userController.updateRole);
+userRoutes.patch("/avatar", ensureAuthenticated, userController.updateAvatar);
 userRoutes.delete("/:id", ensureAuthenticated, ensureAdmin, userController.remove);
 
 export { userRoutes };

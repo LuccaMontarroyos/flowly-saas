@@ -102,6 +102,23 @@ export class UserController {
     }
   };
 
+  updateAvatar = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user.id;
+        const { avatarUrl } = req.body;
+
+        if (!avatarUrl) {
+           return res.status(400).json({ message: "Avatar URL is required" });
+        }
+
+        await this.userService.updateAvatar(userId, avatarUrl);
+
+        return res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+  }
+
   remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const paramsSchema = z.object({ id: z.uuid() });

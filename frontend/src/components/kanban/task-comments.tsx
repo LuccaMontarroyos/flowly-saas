@@ -3,11 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTaskComments, createComment, deleteComment } from "@/services/comment";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Send, Trash2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+import { formatDate, formatDistanceToNow } from "date-fns";
 
 interface TaskCommentsProps {
   taskId: string;
@@ -63,6 +63,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
           comments?.map((comment) => (
             <div key={comment.id} className="group flex gap-3 items-start">
               <Avatar className="w-8 h-8 mt-1">
+                <AvatarImage src={user.avatarUrl || ""} />
                 <AvatarFallback className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                   {comment.user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>

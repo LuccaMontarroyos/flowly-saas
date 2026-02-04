@@ -4,13 +4,14 @@ import { Folder, LayoutDashboard, LogOut, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" }, 
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Folder, label: "Projects", href: "/dashboard/projects" },
     { icon: Users, label: "Members", href: "/dashboard/members" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings" },
@@ -33,7 +34,7 @@ export function AppSidebar() {
 
       <nav className="flex-1 px-3 py-4 space-y-1">
         {menuItems.map((item) => {
-          const isActive = item.href === "/dashboard" 
+          const isActive = item.href === "/dashboard"
             ? pathname === "/dashboard"
             : pathname.startsWith(item.href);
 
@@ -41,11 +42,10 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isActive
+              className={`group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-foreground"
-              }`}
+                }`}
             >
               <item.icon size={20} />
               {item.label}
@@ -56,14 +56,17 @@ export function AppSidebar() {
 
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3">
-          <div className="size-9 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500 dark:text-zinc-400">
-            {userInitials}
-          </div>
+          <Avatar className="size-9 border border-zinc-200 dark:border-zinc-800">
+            <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} className="object-cover" />
+            <AvatarFallback className="bg-zinc-200 dark:bg-zinc-800 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
-                {user?.name || "User"}
+              {user?.name || "User"}
             </p>
-            <button 
+            <button
               onClick={signOut}
               className="text-xs text-muted-foreground truncate hover:text-red-500 flex items-center gap-1 transition-colors"
             >

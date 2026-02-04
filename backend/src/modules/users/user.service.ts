@@ -160,6 +160,20 @@ export class UserService {
       data: { role: newRole },
     });
   }
+
+  async updateAvatar(userId: string, avatarUrl: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: { id: true, name: true, avatarUrl: true }
+    });
+  }
   
   async getProfile(userId: string) {
     const user = await prisma.user.findUnique({
