@@ -5,7 +5,7 @@ import { getTaskComments, createComment, deleteComment } from "@/services/commen
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Send, Trash2, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { formatDate, formatDistanceToNow } from "date-fns";
 
@@ -18,10 +18,18 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
 
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const { data: comments, isLoading } = useQuery({
     queryKey: ["comments", taskId],
     queryFn: () => getTaskComments(taskId),
   });
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [comments]);
 
   const createMutation = useMutation({
     mutationFn: () => createComment(taskId, content),
@@ -54,7 +62,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
         <MessageSquare size={18} className="text-zinc-500" />
         <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Activity</h3>
       </div>
-      <div className="flex-1 overflow-y-auto space-y-4 min-h-[200px] max-h-[400px] pr-2 mb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 min-h-0">
         {isLoading ? (
           <div className="flex justify-center py-4"><Loader2 className="animate-spin text-zinc-400" /></div>
         ) : comments?.length === 0 ? (
@@ -68,16 +76,16 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                   {comment.user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200 truncate">
                     {comment.user.name}
                   </span>
-                  <span className="text-[10px] text-zinc-400">
+                  <span className="text-[10px] text-zinc-400 shrink-0 ml-2">
                     {formatDate(comment.createdAt, "MMM d, yyyy, h:mm a")}
                   </span>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-lg rounded-tl-none text-sm text-zinc-600 dark:text-zinc-300 mt-1 relative group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800/80 transition-colors">
+                <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-lg rounded-tl-none text-sm text-zinc-600 dark:text-zinc-300 mt-1 relative group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800/80 transition-colors break-words">
                   {comment.content}
                   {(currentUser?.id === comment.userId || currentUser?.role === "ADMIN") && (
                     <button
@@ -93,6 +101,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSubmit} className="relative mt-auto">
         <textarea
