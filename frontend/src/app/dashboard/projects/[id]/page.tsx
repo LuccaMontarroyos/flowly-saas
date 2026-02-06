@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProjectById } from "@/services/projects";
-import { getProjectTasks, moveTask, updateTaskStatus } from "@/services/tasks";
+import { getProjectTasks, moveTask } from "@/services/tasks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Filter, Plus, LayoutGrid, List } from "lucide-react";
+import { Plus, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
@@ -15,8 +15,12 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { toast } from "sonner";
 import { EditTaskDialog } from "@/components/kanban/edit-task-dialog";
 import { TaskListView } from "@/components/kanban/task-list-view";
+import { useAuth } from "@/hooks/use-auth";
+import { useDebounce } from "@/hooks/use-debounce";
+import { BoardFilters } from "@/components/kanban/board-filters";
 
 export default function ProjectDetailsPage() {
+    const { user } = useAuth();
     const params = useParams();
     const projectId = params.id as string;
     const queryClient = useQueryClient();
@@ -29,14 +33,26 @@ export default function ProjectDetailsPage() {
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [viewMode, setViewMode] = useState<"board" | "list">("board");
 
+    const [search, setSearch] = useState("");
+    const [onlyMyTasks, setOnlyMyTasks] = useState(false);
+    const [priorityFilter, setPriorityFilter] = useState("ALL");
+
+    const debouncedSearch = useDebounce(search, 500);
+
+    const hasActiveFilters = !!debouncedSearch || onlyMyTasks || priorityFilter !== "ALL";
+
     const { data: project, isLoading: isLoadingProject } = useQuery({
         queryKey: ["project", projectId],
         queryFn: () => getProjectById(projectId),
     });
 
     const { data: serverBoardData, isLoading: isLoadingTasks } = useQuery({
-        queryKey: ["tasks", projectId],
-        queryFn: () => getProjectTasks(projectId),
+        queryKey: ["tasks", projectId, debouncedSearch, onlyMyTasks, priorityFilter],
+        queryFn: () => getProjectTasks(projectId, {
+            search: debouncedSearch,
+            priority: priorityFilter === "ALL" ? undefined : priorityFilter, 
+            assigneeId: onlyMyTasks ? user?.id : undefined
+        }),
         enabled: !!projectId,
     });
 
@@ -57,6 +73,13 @@ export default function ProjectDetailsPage() {
     }
 
     const onDragEnd = async (result: DropResult) => {
+        if (hasActiveFilters) {
+            toast.info("Cannot reorder tasks while filters are active.", {
+                description: "Clear filters to enable Drag & Drop."
+            });
+            return;
+        }
+        
         const { destination, source, draggableId } = result;
 
         if (!destination) return;
@@ -161,6 +184,8 @@ export default function ProjectDetailsPage() {
                     </div>
                 </div>
             </header>
+            <BoardFilters search={search} onSearchChange={setSearch} onlyMyTasks={onlyMyTasks} onOnlyMyTasksChange={setOnlyMyTasks} priority={priorityFilter} onPriorityChange={setPriorityFilter}/>
+
             {viewMode === "board" ? (
                 <DragDropContext onDragEnd={onDragEnd}>
                     <main className="flex-1 overflow-x-auto overflow-y-hidden p-6">

@@ -46,10 +46,17 @@ export class TaskController {
         projectId: z.uuid(),
       });
 
+      const querySchema = z.object({
+        search: z.string().optional(),
+        assigneeId: z.union([z.uuid(), z.literal("")]).optional(),
+        priority: z.string().optional(),
+      });
+
       const { projectId } = paramsSchema.parse(req.params);
+      const filters = querySchema.parse(req.query);
       const { companyId } = req.user;
 
-      const kanbanBoard = await this.taskService.listByProject(projectId, companyId);
+      const kanbanBoard = await this.taskService.listByProject({projectId, companyId, search: filters.search, assigneeId: filters.assigneeId || undefined, priority: filters.priority});
 
       return res.json(kanbanBoard);
     } catch (error) {

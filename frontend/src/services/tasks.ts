@@ -1,9 +1,17 @@
 import { api } from "@/lib/api";
-import { KanbanBoardData, Task, TaskStatus } from "@/types";
+import { KanbanBoardData, Task, TaskStatus, Priority } from "@/types";
 import { CreateTaskForm, EditTaskForm } from "@/modules/tasks/task.types";
 
-export const getProjectTasks = async (projectId: string) => {
-  const response = await api.get<KanbanBoardData>(`/tasks/project/${projectId}`);
+export interface TaskFilters {
+  search?: string;
+  assigneeId?: string;
+  priority?: string;
+}
+
+export const getProjectTasks = async (projectId: string, filters?: TaskFilters) => {
+  const response = await api.get<KanbanBoardData>(`/tasks/project/${projectId}`, {
+    params: filters
+  });
   return response.data;
 };
 
