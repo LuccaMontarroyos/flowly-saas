@@ -1,6 +1,5 @@
 "use client";
 
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Trash2 } from "lucide-react";
@@ -13,6 +12,8 @@ import { editTaskSchema } from "@/modules/tasks/task.schema";
 import { EditTaskForm } from "@/modules/tasks/task.types";
 import { getCompanyUsers } from "@/services/users";
 import { TaskComments } from "./task-comments";
+import { useForm, Controller } from "react-hook-form";
+import { Editor } from "@/components/ui/editor";
 
 interface EditTaskDialogProps {
     task: Task | null;
@@ -23,7 +24,7 @@ interface EditTaskDialogProps {
 export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps) {
     const queryClient = useQueryClient();
 
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<EditTaskForm>({
+    const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<EditTaskForm>({
         resolver: zodResolver(editTaskSchema),
     });
 
@@ -137,11 +138,20 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                             </div>
                             <div className="flex flex-col flex-1 min-h-0 space-y-2">
                                 <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Description</label>
-                                <textarea
-                                    {...register("description")}
-                                    className="flex-1 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none transition-all resize-none leading-relaxed"
-                                    placeholder="Add a detailed description..."
-                                />
+
+                                <div className="flex-1 min-h-0">
+                                    <Controller
+                                        name="description"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Editor
+                                                value={field.value || ""}
+                                                onChange={field.onChange}
+                                                placeholder="Add a detailed description..."
+                                            />
+                                        )}
+                                    />
+                                </div>
                             </div>
                         </form>
                         <div className="flex justify-between items-center w-full mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 shrink-0">
