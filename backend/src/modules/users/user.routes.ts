@@ -10,6 +10,7 @@ userRoutes.post("/", userController.register);
 
 userRoutes.get("/", ensureAuthenticated, userController.index);
 userRoutes.get("/me", ensureAuthenticated, userController.profile);
+userRoutes.patch("/me", ensureAuthenticated, userController.updateProfile);
 
 userRoutes.post("/member", ensureAuthenticated, ensureAdmin, userController.createMember);
 userRoutes.patch("/:id/role", ensureAuthenticated, ensureAdmin, userController.updateRole);

@@ -11,6 +11,11 @@ export interface User {
   companyId: string;
 }
 
+export interface UpdateProfileData {
+  name?: string;
+  password?: string;
+}
+
 export interface GetUsersResponse {
   data: User[];
   meta: {
@@ -34,6 +39,11 @@ export const getCompanyUsers = async (page = 1, search = "", limit = 5) => {
 
 export const updateUserRole = async (userId: string, role: UserRole) => {
   const response = await api.patch(`/users/${userId}/role`, { role });
+  return response.data;
+};
+
+export const updateUserProfile = async (data: UpdateProfileData) => {
+  const response = await api.patch<User>("/users/me", data);
   return response.data;
 };
 

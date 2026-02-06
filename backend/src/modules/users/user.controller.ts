@@ -76,6 +76,34 @@ export class UserController {
     }
   };
 
+  updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const schema = z.object({
+        name: z.string().min(2).optional(),
+        oldPassword: z.string().optional(),
+        newPassword: z.string().min(6).optional(),
+      });
+
+      const { name, oldPassword, newPassword } = schema.parse(req.body);
+      const userId = req.user.id;
+
+      if (!name && !newPassword) {
+         return res.status(400).json({ message: "Provide name or password to update." });
+      }
+
+      const updatedUser = await this.userService.updateProfile({
+        userId,
+        name,
+        oldPassword,
+        newPassword
+      });
+
+      return res.json(updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   updateRole = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const paramsSchema = z.object({ id: z.uuid() });
