@@ -14,6 +14,12 @@ export interface Project {
   description: string | null;
   taskCount: number;
   ownerId: string;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string | null
+  } | null;
   companyId: string;
   createdAt: string;
 }

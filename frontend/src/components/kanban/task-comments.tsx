@@ -63,7 +63,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
           comments?.map((comment) => (
             <div key={comment.id} className="group flex gap-3 items-start">
               <Avatar className="w-8 h-8 mt-1">
-                <AvatarImage src={user.avatarUrl || ""} />
+                <AvatarImage src={comment.user.avatarUrl || ""} />
                 <AvatarFallback className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                   {comment.user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -74,7 +74,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                     {comment.user.name}
                   </span>
                   <span className="text-[10px] text-zinc-400">
-                    {formatDate(comment.createdAt)}
+                    {formatDate(comment.createdAt, "MMM d, yyyy, h:mm a")}
                   </span>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-lg rounded-tl-none text-sm text-zinc-600 dark:text-zinc-300 mt-1 relative group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800/80 transition-colors">

@@ -59,6 +59,10 @@ export class ProjectService {
                     _count: {
                         select: { tasks: true },
                     },
+                    owner: {
+                        select: { name: true, email: true, role: true, avatarUrl: true, assignedTasks: true },
+                        
+                    }
                 },
             }),
             prisma.project.count({ where: whereCondition }),

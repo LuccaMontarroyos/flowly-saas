@@ -6,7 +6,7 @@ export const createTaskSchema = z.object({
   description: z.string().optional(),
   status: z.enum(TaskStatus),
   priority: z.enum(Priority),
-  assigneeId: z.uuid().optional().or(z.literal("")),
+  assigneeId: z.uuid().optional().or(z.literal("")).nullable(),
 });
 
 export const editTaskSchema = z.object({

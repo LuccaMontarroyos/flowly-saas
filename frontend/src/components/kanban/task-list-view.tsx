@@ -2,7 +2,7 @@
 
 import { Task, TaskStatus } from "@/types";
 import { Loader, CheckCircle2, Circle } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateTaskStatus } from "@/services/tasks";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -101,6 +101,7 @@ export function TaskListView({ tasks, onTaskClick }: TaskListViewProps) {
                                 {task.assignee ? (
                                     <div className="flex items-center gap-2">
                                         <Avatar className="h-6 w-6">
+                                            <AvatarImage src={task.assignee.avatarUrl || ""}/>
                                             <AvatarFallback className="text-[10px]">{task.assignee.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <span className="text-xs text-zinc-600 dark:text-zinc-300">{task.assignee.name}</span>

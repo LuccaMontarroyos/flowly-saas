@@ -3,6 +3,7 @@
 import { Project } from "@/types";
 import { Folder, MoreHorizontal, Trash2, Eye, Pencil } from "lucide-react";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,12 +44,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <>
       <div className="group relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-primary/50 rounded-xl p-5 transition-all duration-200 hover:shadow-md flex flex-col h-[200px] overflow-hidden">
-        
+
         <div className="flex justify-between items-start mb-3 shrink-0">
           <Link href={`/dashboard/projects/${project.id}`}>
-              <div className="p-2 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+            <div className="p-2 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
               <Folder size={20} />
-              </div>
+            </div>
           </Link>
 
           <DropdownMenu>
@@ -57,35 +58,35 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <MoreHorizontal size={20} />
               </button>
             </DropdownMenuTrigger>
-            
-            <DropdownMenuContent 
-                align="end" 
-                className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl z-50 w-48"
+
+            <DropdownMenuContent
+              align="end"
+              className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl z-50 w-48"
             >
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-zinc-100 dark:bg-zinc-800" />
-              
+
               <Link href={`/dashboard/projects/${project.id}`}>
-                  <DropdownMenuItem className="cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                <DropdownMenuItem className="cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
                   <Eye className="mr-2 h-4 w-4 text-zinc-500" /> View Board
-                  </DropdownMenuItem>
+                </DropdownMenuItem>
               </Link>
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditOpen(true);
+                  e.stopPropagation();
+                  setIsEditOpen(true);
                 }}
                 className="cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800"
               >
                 <Pencil className="mr-2 h-4 w-4 text-zinc-500" /> Edit Project
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator className="bg-zinc-100 dark:bg-zinc-800" />
-              
-              <DropdownMenuItem 
-                  onClick={handleDelete} 
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer"
+
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20 cursor-pointer"
               >
                 <Trash2 className="mr-2 h-4 w-4" /> Delete
               </DropdownMenuItem>
@@ -106,17 +107,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span>{project.taskCount} Tasks</span>
           </div>
           <div className="flex -space-x-2">
-            <div className="size-6 rounded-full ring-2 ring-white dark:ring-zinc-900 bg-zinc-200 flex items-center justify-center text-[10px] font-bold text-zinc-500">
-              F
-            </div>
+            {project.owner && (
+              <Avatar className="size-6 ring-2 ring-white dark:ring-zinc-900">
+                <AvatarImage src={project.owner.avatarUrl || ""} />
+                <AvatarFallback className="bg-zinc-200 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500">
+                  {project.owner.name?.charAt(0).toUpperCase() || "O"}
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
         </div>
       </div>
 
-      <EditProjectDialog 
-        project={project} 
-        open={isEditOpen} 
-        onOpenChange={setIsEditOpen} 
+      <EditProjectDialog
+        project={project}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
       />
     </>
   );

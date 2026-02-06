@@ -8,6 +8,7 @@ export interface User {
   avatarUrl?: string | null;
   role: UserRole;
   createdAt: string;
+  companyId: string;
 }
 
 export interface GetUsersResponse {

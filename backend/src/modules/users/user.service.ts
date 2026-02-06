@@ -134,6 +134,7 @@ export class UserService {
           email: true,
           role: true,
           createdAt: true,
+          avatarUrl: true,
         },
       }),
       prisma.user.count({ where: whereCondition }),
@@ -184,6 +185,7 @@ export class UserService {
         email: true,
         role: true,
         companyId: true,
+        avatarUrl: true,
       },
     });
 

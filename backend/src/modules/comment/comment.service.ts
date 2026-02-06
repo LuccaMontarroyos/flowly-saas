@@ -35,7 +35,7 @@ export class CommentService {
       orderBy: { createdAt: "asc" },
       include: {
         user: {
-          select: { id: true, name: true }
+          select: { id: true, name: true, avatarUrl: true }
         }
       }
     });
