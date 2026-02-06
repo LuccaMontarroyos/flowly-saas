@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { UserRole } from "@/types";
+import { ProfileFormValues, ChangePasswordFormValues } from "@/modules/users/user.types";
 
 export interface User {
   id: string;
@@ -9,11 +10,6 @@ export interface User {
   role: UserRole;
   createdAt: string;
   companyId: string;
-}
-
-export interface UpdateProfileData {
-  name?: string;
-  password?: string;
 }
 
 export interface GetUsersResponse {
@@ -42,8 +38,20 @@ export const updateUserRole = async (userId: string, role: UserRole) => {
   return response.data;
 };
 
-export const updateUserProfile = async (data: UpdateProfileData) => {
-  const response = await api.patch<User>("/users/me", data);
+export const updateUserProfile = async (data: ProfileFormValues) => {
+  const response = await api.patch<User>("/users/me", { name: data.name });
+  return response.data;
+};
+
+export const updateUserAvatar = async (avatarUrl: string) => {
+  await api.patch("/users/avatar", { avatarUrl });
+};
+
+export const changeUserPassword = async (data: ChangePasswordFormValues) => {
+  const response = await api.patch<User>("/users/me", {
+    oldPassword: data.oldPassword,
+    newPassword: data.newPassword
+  });
   return response.data;
 };
 

@@ -2,23 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { useState } from "react";
-
-const passwordSchema = z.object({
-    oldPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(6, "New password must be at least 6 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-});
-
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+import { changePasswordSchema } from "@/modules/users/user.schema";
+import { ChangePasswordFormValues } from "@/modules/users/user.types";
+import { changeUserPassword } from "@/services/users";
 
 interface ChangePasswordDialogProps {
     open: boolean;
@@ -26,16 +16,13 @@ interface ChangePasswordDialogProps {
 }
 
 export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialogProps) {
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<PasswordFormValues>({
-        resolver: zodResolver(passwordSchema),
+    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ChangePasswordFormValues>({
+        resolver: zodResolver(changePasswordSchema),
     });
 
-    const onSubmit = async (data: PasswordFormValues) => {
+    const onSubmit = async (data: ChangePasswordFormValues) => {
         try {
-            await api.patch("/users/me", {
-                oldPassword: data.oldPassword,
-                newPassword: data.newPassword
-            });
+            await changeUserPassword(data);
             
             toast.success("Password changed successfully!");
             reset();
