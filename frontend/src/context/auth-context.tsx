@@ -34,20 +34,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
+  const pathname = usePathname();
 
   const isAuthenticated = !!user;
 
-  
   useEffect(() => {
     const { "flowly.token": token } = parseCookies();
 
     if (token) {
+      api.defaults.headers["Authorization"] = `Bearer ${token}`;
+
       api.get("/users/me")
         .then((response) => {
           setUser(response.data);
         })
-        .catch(() => {
-          signOut();
+        .catch((error) => {
+          console.error("Token inválido, fazendo logout forçado:", error);
+          destroyCookie(undefined, "flowly.token", { path: '/' }); 
+          
+          delete api.defaults.headers["Authorization"];
+          setUser(null);
+          router.replace("/auth/login");
         })
         .finally(() => {
             setIsLoading(false);
@@ -63,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { token, user } = response.data;
 
       setCookie(undefined, "flowly.token", token, {
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: 60 * 60 * 24 * 30, // 30 dias
         path: "/",
       });
 
@@ -87,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.post("/auth/register", data);
       const { token, user } = response.data;
+      
       if (token) {
           setCookie(undefined, "flowly.token", token, {
             maxAge: 60 * 60 * 24 * 30,
@@ -111,6 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function signOut() {
     destroyCookie(undefined, "flowly.token");
+    
+    delete api.defaults.headers["Authorization"];
+    
     setUser(null);
     router.push("/auth/login");
   }

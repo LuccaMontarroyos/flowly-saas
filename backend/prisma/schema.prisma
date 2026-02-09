@@ -98,6 +98,7 @@ model Task {
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   priority Priority @default(LOW)
+  attachments Attachment[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -107,6 +108,21 @@ model Task {
   @@index([projectId])
   @@index([assigneeId])
   @@map("tasks")
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  type      String
+  size      Int
+  
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@map("attachments")
 }
 
 enum Priority {

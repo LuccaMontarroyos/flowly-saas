@@ -14,6 +14,7 @@ import { getCompanyUsers } from "@/services/users";
 import { TaskComments } from "./task-comments";
 import { useForm, Controller } from "react-hook-form";
 import { Editor } from "@/components/ui/editor";
+import { TaskAttachments } from "./task-attachments";
 
 interface EditTaskDialogProps {
     task: Task | null;
@@ -183,8 +184,13 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-2 h-full bg-zinc-50/50 dark:bg-zinc-900/30 overflow-hidden border-l border-zinc-100 dark:border-zinc-800">
-                        <TaskComments taskId={task.id} />
+                    <div className="md:col-span-2 h-full bg-zinc-50/50 dark:bg-zinc-900/30 overflow-hidden border-l border-zinc-100 dark:border-zinc-800 flex flex col">
+                        <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 max-h-[40%] overflow-y-auto custom-scrollbar">
+                            <TaskAttachments taskId={task.id} />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                            <TaskComments taskId={task.id} />
+                        </div>
                     </div>
                 </div>
 

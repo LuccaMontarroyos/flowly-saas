@@ -9,6 +9,7 @@ import { projectRoutes } from './modules/project/project.routes'
 import { taskRoutes } from './modules/task/task.routes';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes';
 import { commentRoutes } from './modules/comment/comment.routes';
+import { attachmentRoutes } from './modules/attachment/attachment.routes';
 
 export class App {
     public app: Express;
@@ -40,6 +41,7 @@ export class App {
         this.app.use('/api/v1/tasks', taskRoutes);
         this.app.use('/api/v1/dashboard', dashboardRoutes);
         this.app.use('/api/v1/comments', commentRoutes);
+        this.app.use("/api/v1/attachments", attachmentRoutes);
 
     }
 

@@ -20,12 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-background-light dark:bg-background-dark antialiased`}>
-        <ReactQueryProvider>
           <Providers>
             {children}
           </Providers>
-          <Toaster richColors position="top-right" />
-        </ReactQueryProvider>
       </body>
     </html>
   );
