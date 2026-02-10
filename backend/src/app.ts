@@ -10,6 +10,8 @@ import { taskRoutes } from './modules/task/task.routes';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes';
 import { commentRoutes } from './modules/comment/comment.routes';
 import { attachmentRoutes } from './modules/attachment/attachment.routes';
+import { createRouteHandler } from "uploadthing/express";
+import { uploadRouter } from "./shared/providers/uploadthing";
 
 export class App {
     public app: Express;
@@ -25,7 +27,8 @@ export class App {
         this.app.use(express.json());
         this.app.use(cors({
             origin: 'http://localhost:3001',
-            credentials: true
+            credentials: true,
+            allowedHeaders: ['Content-Type', 'Authorization', 'x-uploadthing-package', 'x-uploadthing-version'],
         }));
         this.app.use(helmet());
     }
@@ -34,6 +37,13 @@ export class App {
         this.app.get('/health', (req, res) => {
             res.json({ status: 'ok', timestamp: new Date() });
         });
+
+        this.app.use(
+            "/api/uploadthing",
+            createRouteHandler({
+                router: uploadRouter,
+            })
+        );
 
         this.app.use('/api/v1/auth', authRoutes);
         this.app.use('/api/v1/users', userRoutes);

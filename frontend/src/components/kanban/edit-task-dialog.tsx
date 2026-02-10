@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Calendar, User, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { updateTask, deleteTask } from "@/services/tasks";
@@ -77,98 +77,95 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 sm:max-w-[1000px] h-[95vh] sm:h-[85vh] flex flex-col overflow-hidden p-0 gap-0">
-                <DialogHeader className="p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                    <DialogTitle className="text-zinc-900 dark:text-zinc-100 flex justify-between items-center pr-8">
-                        <span>Edit Task</span>
-                        <span className="text-xs font-mono text-zinc-400 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 rounded">
-                            FLO-{task.id.slice(0, 4)}
-                        </span>
-                    </DialogTitle>
+            <DialogContent className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 sm:max-w-[1100px] h-[90vh] flex flex-col overflow-hidden p-0 gap-0 shadow-2xl">
+                <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0 bg-white dark:bg-zinc-950">
+                    <div className="flex justify-between items-center pr-8">
+                        <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-3">
+                            <span className="text-xs font-mono font-normal text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
+                                FLO-{task.id.slice(0, 4).toUpperCase()}
+                            </span>
+                        </DialogTitle>
+                    </div>
                 </DialogHeader>
-                <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-5 h-full">
-                    <div className="md:col-span-3 flex flex-col h-full overflow-hidden p-6 border-b md:border-b-0">
-                        <form id="edit-task-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 gap-6">
-                            <div className="space-y-6 shrink-0">
+                <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 h-full">
+                    <div className="md:col-span-7 flex flex-col h-full overflow-hidden border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            <form id="edit-task-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Title</label>
                                     <input
                                         {...register("title")}
-                                        className="flex h-11 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-primary outline-none transition-all"
-                                        placeholder="Task title"
+                                        className="w-full text-2xl font-bold bg-transparent border-none p-0 focus:ring-0 placeholder:text-zinc-300 text-zinc-900 dark:text-zinc-100 transition-colors"
+                                        placeholder="Issue Title"
                                     />
                                     {errors.title && <span className="text-red-500 text-xs">{errors.title.message}</span>}
                                 </div>
-
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</label>
+                                <div className="flex flex-wrap gap-4 items-center">
+                                    <div className="relative group">
                                         <select
                                             {...register("status")}
-                                            className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                                            className="appearance-none bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-medium px-3 py-1.5 rounded-md pr-8 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-zinc-700 dark:text-zinc-200"
                                         >
                                             <option value={TaskStatus.TODO}>To Do</option>
                                             <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
                                             <option value={TaskStatus.DONE}>Done</option>
                                         </select>
+                                        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Priority</label>
+                                    <div className="relative group">
                                         <select
                                             {...register("priority")}
-                                            className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                                            className="appearance-none bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-medium px-3 py-1.5 rounded-md pr-8 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-zinc-700 dark:text-zinc-200"
                                         >
-                                            <option value={Priority.LOW}>Low</option>
-                                            <option value={Priority.MEDIUM}>Medium</option>
-                                            <option value={Priority.HIGH}>High</option>
+                                            <option value={Priority.LOW}>Low Priority</option>
+                                            <option value={Priority.MEDIUM}>Medium Priority</option>
+                                            <option value={Priority.HIGH}>High Priority</option>
                                         </select>
+                                        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Assignee</label>
+                                    <div className="relative group">
                                         <select
                                             {...register("assigneeId")}
-                                            className="flex h-10 w-full rounded-md border border-zinc-300 dark:border-zinc-800 bg-transparent px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                                            className="appearance-none bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-medium px-3 py-1.5 rounded-md pr-8 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-zinc-700 dark:text-zinc-200"
                                         >
                                             <option value="">Unassigned</option>
                                             {users.map(user => (
                                                 <option key={user.id} value={user.id}>{user.name}</option>
                                             ))}
                                         </select>
+                                        <User size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex flex-col flex-1 min-h-0 space-y-2">
-                                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-300">Description</label>
-
-                                <div className="flex-1 min-h-0">
-                                    <Controller
-                                        name="description"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Editor
-                                                value={field.value || ""}
-                                                onChange={field.onChange}
-                                                placeholder="Add a detailed description..."
-                                            />
-                                        )}
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Description</label>
+                                    <div className="min-h-[200px] -mx-2">
+                                        <Controller
+                                            name="description"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Editor
+                                                    value={field.value || ""}
+                                                    onChange={field.onChange}
+                                                    placeholder="Add a detailed description..."
+                                                />
+                                            )}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
-                        <div className="flex justify-between items-center w-full mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 shrink-0">
+                            </form>
+                        </div>
+                        <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-900/30 backdrop-blur-sm shrink-0">
                             <button
                                 type="button"
                                 onClick={handleDelete}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 px-3 py-2 rounded-md transition-colors flex items-center gap-2 text-sm font-medium"
+                                className="text-zinc-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md flex items-center gap-2 text-xs font-medium"
                             >
-                                <Trash2 size={16} /> Delete
+                                <Trash2 size={14} /> Delete Task
                             </button>
-
                             <div className="flex gap-3">
                                 <button
                                     type="button"
                                     onClick={() => onOpenChange(false)}
-                                    className="px-4 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors bg-zinc-100 dark:bg-zinc-800 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                    className="px-4 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -176,19 +173,19 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                                     form="edit-task-form"
                                     disabled={isSubmitting}
                                     type="submit"
-                                    className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-primary/20"
+                                    className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm"
                                 >
                                     {isSubmitting && <Loader2 className="animate-spin" size={16} />}
-                                    {isSubmitting ? "Saving..." : "Save Changes"}
+                                    Save Changes
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-2 h-full bg-zinc-50/50 dark:bg-zinc-900/30 overflow-hidden border-l border-zinc-100 dark:border-zinc-800 flex flex col">
-                        <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 max-h-[40%] overflow-y-auto custom-scrollbar">
+                    <div className="md:col-span-5 flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/20 overflow-hidden">
+                        <div className="shrink-0 p-6 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm max-h-[35%] overflow-y-auto custom-scrollbar">
                             <TaskAttachments taskId={task.id} />
                         </div>
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
                             <TaskComments taskId={task.id} />
                         </div>
                     </div>

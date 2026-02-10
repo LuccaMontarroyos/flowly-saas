@@ -71,7 +71,6 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
 
     return (
         <div className="flex flex-col h-full border-t md:border-t-0 md:border-l border-zinc-200 dark:border-zinc-800 md:pl-0 pt-6 md:pt-0 bg-white dark:bg-zinc-950/50">
-            {/* Header Fixo */}
             <div className="flex items-center gap-2 mb-4 shrink-0 px-6 pt-6">
                 <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-500">
                     <MessageSquare size={16} />
@@ -81,9 +80,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                     <p className="text-xs text-zinc-500">Latest comments and updates</p>
                 </div>
             </div>
-
-            {/* Lista de Comentários */}
-            <div className="flex-1 overflow-y-auto space-y-6 px-6 pb-4 min-h-0 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto space-y-6 p-6 bg-transparent custom-scrollbar">
                 {isLoading ? (
                     <div className="flex justify-center py-8"><Loader2 className="animate-spin text-zinc-400" /></div>
                 ) : comments?.length === 0 ? (
@@ -108,7 +105,6 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                                 </Avatar>
 
                                 <div className="flex-1 min-w-0 space-y-1">
-                                    {/* Cabeçalho do Comentário (Nome e Data) */}
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -118,8 +114,6 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                                                 {formatCommentDate(comment.createdAt)}
                                             </span>
                                         </div>
-                                        
-                                        {/* Botão de Opções (Delete) */}
                                         {canDelete && (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -128,7 +122,7 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                                                     </button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-32">
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         onClick={() => deleteMutation.mutate(comment.id)}
                                                         className="text-red-600 focus:text-red-600 cursor-pointer text-xs"
                                                     >
@@ -138,12 +132,10 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                                             </DropdownMenu>
                                         )}
                                     </div>
-
-                                    {/* Corpo do Comentário (Bubble) */}
                                     <div className={`
                                         p-3 rounded-2xl text-sm leading-relaxed shadow-sm border
-                                        ${isCurrentUser 
-                                            ? "bg-blue-50/50 border-blue-100 text-zinc-800 dark:bg-blue-900/10 dark:border-blue-900/30 dark:text-zinc-200 rounded-tr-sm" 
+                                        ${isCurrentUser
+                                            ? "bg-blue-50/50 border-blue-100 text-zinc-800 dark:bg-blue-900/10 dark:border-blue-900/30 dark:text-zinc-200 rounded-tr-sm"
                                             : "bg-white border-zinc-200 text-zinc-700 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300 rounded-tl-sm"
                                         }
                                     `}>
@@ -156,8 +148,6 @@ export function TaskComments({ taskId }: TaskCommentsProps) {
                 )}
                 <div ref={messagesEndRef} />
             </div>
-
-            {/* Área de Input */}
             <div className="p-4 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-800 shrink-0">
                 <form onSubmit={handleSubmit} className="relative group/input">
                     <textarea
