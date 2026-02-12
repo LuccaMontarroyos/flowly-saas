@@ -16,7 +16,7 @@ export class TaskController {
         title: z.string().min(1),
         description: z.string().optional(),
         projectId: z.uuid(),
-        assigneeId: z.uuid().optional(),
+        assigneeId: z.union([z.string().uuid(), z.literal("")]).optional(),
         status: z.enum(TaskStatus),
         priority: z.enum(Priority).optional(),
         tags: z.array(z.string()).optional(),
@@ -30,7 +30,7 @@ export class TaskController {
         description,
         projectId,
         companyId,
-        assigneeId,
+        assigneeId: assigneeId || undefined,
         status,
         priority,
         tags,
@@ -91,7 +91,7 @@ export class TaskController {
         title: z.string().optional(),
         description: z.string().optional(),
         status: z.enum(TaskStatus).optional(),
-        assigneeId: z.uuid().nullable().optional(),
+        assigneeId: z.union([z.string().uuid(), z.literal(""), z.null()]).optional(),
         priority: z.enum(Priority).optional(),
         tags: z.array(z.string()).optional(),
       });
@@ -107,7 +107,7 @@ export class TaskController {
         title,
         description,
         status,
-        assigneeId: assigneeId === null ? undefined : assigneeId,
+        assigneeId: (assigneeId === null || assigneeId === "") ? undefined : assigneeId,
         priority,
         tags
       });
