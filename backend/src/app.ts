@@ -13,6 +13,7 @@ import { attachmentRoutes } from './modules/attachment/attachment.routes';
 import { createRouteHandler } from "uploadthing/express";
 import { uploadRouter } from "./shared/providers/uploadthing";
 import { inviteRoutes } from './modules/invite/invite.routes';
+import { companyRoutes } from './modules/company/company.routes';
 
 export class App {
     public app: Express;
@@ -54,6 +55,7 @@ export class App {
         this.app.use('/api/v1/comments', commentRoutes);
         this.app.use('/api/v1/invites', inviteRoutes);
         this.app.use("/api/v1/attachments", attachmentRoutes);
+        this.app.use("/api/v1/company", companyRoutes);
 
     }
 

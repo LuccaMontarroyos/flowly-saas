@@ -4,21 +4,28 @@ import { useAuth } from "@/hooks/use-auth";
 import { UploadButton } from "@/lib/uploadthing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Loader2, User as UserIcon, Mail, Shield, Pencil, Save, X } from "lucide-react";
+import { Loader2, User as UserIcon, Mail, Shield, Pencil, Save, X, Building2, Lock, Users, Briefcase } from "lucide-react";
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { profileSchema } from "@/modules/users/user.schema";
 import { ProfileFormValues } from "@/modules/users/user.types";
 import { updateUserProfile, updateUserAvatar } from "@/services/users";
+import { useQuery } from "@tanstack/react-query";
+import { getCompany } from "@/services/company";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettingsPage() {
     const { user, updateUser } = useAuth();
     const [key, setKey] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+    const { data: company, isLoading: isLoadingCompany } = useQuery({
+        queryKey: ["company"],
+        queryFn: getCompany,
+    });
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
@@ -49,6 +56,7 @@ export default function SettingsPage() {
                     <h1 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Settings</h1>
                     <p className="text-zinc-500 mt-2">Manage your account settings and preferences.</p>
                 </div>
+                
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
                     <div className="p-8 border-b border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row items-center gap-8">
                         <div className="relative group">
@@ -98,6 +106,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </div>
+                    
                     <div className="p-8 space-y-8">
                         <div className="flex items-center justify-between">
                             <div>
@@ -170,6 +179,73 @@ export default function SettingsPage() {
                             )}
                         </form>
                     </div>
+                    <div className="p-8 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30">
+                        <div className="mb-6">
+                            <h3 className="text-lg font-medium text-zinc-900 dark:text-white flex items-center gap-2">
+                                <Building2 size={18} className="text-primary" /> Workspace Settings
+                            </h3>
+                            <p className="text-sm text-zinc-500 mt-1">Manage your organization details (Read-only).</p>
+                        </div>
+
+                        {isLoadingCompany ? (
+                            <div className="space-y-4 max-w-xl">
+                                <Skeleton className="h-10 w-full rounded-md" />
+                                <Skeleton className="h-10 w-full rounded-md" />
+                            </div>
+                        ) : (
+                            <div className="space-y-6 max-w-xl">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Workspace Name</label>
+                                    <div className="relative">
+                                        <input
+                                            value={company?.name || ""}
+                                            readOnly
+                                            className="w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed text-sm pr-10"
+                                        />
+                                        <Lock className="absolute right-3 top-2.5 text-zinc-400" size={16} />
+                                    </div>
+                                    <p className="text-[11px] text-zinc-400">
+                                        The workspace name cannot be changed. Contact support for assistance.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Workspace URL (Slug)</label>
+                                    <div className="relative">
+                                        <input
+                                            value={company?.slug || ""}
+                                            readOnly
+                                            className="w-full h-10 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed text-sm pr-10"
+                                        />
+                                        <Lock className="absolute right-3 top-2.5 text-zinc-400" size={16} />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center gap-3 shadow-sm">
+                                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md">
+                                            <Users size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold text-zinc-900 dark:text-white leading-none">{company?._count?.users || 0}</p>
+                                            <p className="text-[10px] text-zinc-500 uppercase tracking-wide font-medium mt-1">Members</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center gap-3 shadow-sm">
+                                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-md">
+                                            <Briefcase size={18} />
+                                        </div>
+                                        <div>
+                                            <p className="text-lg font-bold text-zinc-900 dark:text-white leading-none">{company?._count?.projects || 0}</p>
+                                            <p className="text-[10px] text-zinc-500 uppercase tracking-wide font-medium mt-1">Projects</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="p-8 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
                         <div className="flex items-center justify-between">
                             <div>
