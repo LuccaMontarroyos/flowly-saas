@@ -29,15 +29,16 @@ export default function DashboardPage() {
     const { user } = useAuth();
 
     const { data: stats, isLoading } = useQuery({
-        queryKey: ["dashboard-stats"],
+        queryKey: ["dashboard-stats", user?.companyId],
         queryFn: getDashboardStats,
         staleTime: 1000 * 60 * 5,
+        enabled: !!user?.companyId
     });
 
     const chartData = stats ? [
         { name: "To Do", total: stats.tasksDistribution[TaskStatus.TODO] || 0, color: "#94a3b8" },
-        { name: "In Progress", total: stats.tasksDistribution[TaskStatus.IN_PROGRESS] || 0, color: "#3b82f6" },
-        { name: "Done", total: stats.tasksDistribution[TaskStatus.DONE] || 0, color: "#22c55e" },
+        { name: "In Progress", total: stats.tasksDistribution[TaskStatus.IN_PROGRESS] || 0, color: "#5b2bee" },
+        { name: "Done", total: stats.tasksDistribution[TaskStatus.DONE] || 0, color: "#5b2bee" },
     ] : [];
 
     if (isLoading) {
@@ -61,22 +62,22 @@ export default function DashboardPage() {
                         title="Total Projects"
                         total={stats?.overview.totalProjects || 0}
                         icon={Briefcase}
-                        color="text-blue-500"
-                        bg="bg-blue-50 dark:bg-blue-900/20"
+                        color="text-primary"
+                        bg="bg-primary/10 dark:bg-primary/20"
                     />
                     <StatCard
                         title="Total Tasks"
                         total={stats?.overview.totalTasks || 0}
                         icon={CheckCircle2}
-                        color="text-purple-500"
-                        bg="bg-purple-50 dark:bg-purple-900/20"
+                        color="text-primary"
+                        bg="bg-primary/10 dark:bg-primary/20"
                     />
                     <StatCard
                         title="Team Members"
                         total={stats?.overview.totalMembers || 0}
                         icon={Users}
-                        color="text-emerald-500"
-                        bg="bg-emerald-50 dark:bg-emerald-900/20"
+                        color="text-primary"
+                        bg="bg-primary/10 dark:bg-primary/20"
                     />
                 </div>
 
@@ -121,7 +122,6 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Recent Tasks (1/3 width) */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">My Priorities</h3>
@@ -174,9 +174,9 @@ function StatCard({ title, total, icon: Icon, color, bg }: any) {
 
 function PriorityBadge({ priority }: { priority: Priority }) {
     const colors = {
-        [Priority.HIGH]: "bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30",
-        [Priority.MEDIUM]: "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30",
-        [Priority.LOW]: "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/30",
+        [Priority.HIGH]: "bg-primary/20 text-primary border-primary/30 dark:bg-primary/30 dark:text-primary dark:border-primary/40",
+        [Priority.MEDIUM]: "bg-primary/15 text-primary border-primary/25 dark:bg-primary/25 dark:text-primary dark:border-primary/35",
+        [Priority.LOW]: "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/30",
     };
 
     return (

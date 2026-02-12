@@ -57,7 +57,11 @@ export function AppSidebar() {
       <div className="p-4 border-t border-border">
         <div className="flex items-center gap-3">
           <Avatar className="size-9 border border-zinc-200 dark:border-zinc-800">
-            <AvatarImage src={user?.avatarUrl || ""} alt={user?.name} className="object-cover" />
+            <AvatarImage 
+                src={user?.avatarUrl || undefined} 
+                alt={user?.name || "User"} 
+                className="object-cover" 
+            />
             <AvatarFallback className="bg-zinc-200 dark:bg-zinc-800 text-xs font-bold text-zinc-500 dark:text-zinc-400">
               {userInitials}
             </AvatarFallback>

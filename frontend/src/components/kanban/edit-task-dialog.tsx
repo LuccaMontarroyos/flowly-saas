@@ -128,7 +128,6 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                                 </div>
 
                                 <div className="flex flex-wrap gap-3 items-center">
-                                    {/* Status, Priority, Assignee Selects (Mesmo código que você mandou, mantido) */}
                                     <div className="relative group">
                                         <select {...register("status")} className="appearance-none bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-medium px-3 py-1.5 rounded-md pr-8 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-zinc-700 dark:text-zinc-200 border border-transparent">
                                             <option value={TaskStatus.TODO}>To Do</option>
@@ -158,7 +157,6 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
                                     </div>
                                 </div>
 
-                                {/* Seção de TAGS */}
                                 <div className="space-y-2 pt-2">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <TagSelector 

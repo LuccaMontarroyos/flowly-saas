@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Tag as TagIcon, Check, Loader2, Trash2 } from "lucide-react"; // Adicionei Trash2
+import { Plus, Tag as TagIcon, Check, Loader2, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,14 +23,12 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
   const [selectedColor, setSelectedColor] = useState("gray");
   const queryClient = useQueryClient();
 
-  // Busca tags existentes
   const { data: availableTags = [], isLoading } = useQuery<Tag[]>({
     queryKey: ["tags"],
     queryFn: async () => (await api.get("/tags")).data,
     enabled: isOpen 
   });
 
-  // Criação de Tag
   const createTagMutation = useMutation({
     mutationFn: async () => {
       const res = await api.post("/tags", { name: newTagName, color: selectedColor });
@@ -45,14 +43,12 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
     onError: () => toast.error("Failed to create tag")
   });
 
-  // Exclusão de Tag
   const deleteTagMutation = useMutation({
     mutationFn: async (tagId: string) => {
       await api.delete(`/tags/${tagId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
-      // Invalida tasks também para atualizar o board se a tag sumir dos cards
       queryClient.invalidateQueries({ queryKey: ["tasks"] }); 
       toast.success("Tag deleted");
     },
@@ -66,7 +62,7 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
   };
 
   const handleDelete = (e: React.MouseEvent, tagId: string) => {
-    e.stopPropagation(); // Impede que o clique selecione a tag ao invés de deletar
+    e.stopPropagation();
     if (confirm("Are you sure you want to delete this tag? It will be removed from all tasks.")) {
         deleteTagMutation.mutate(tagId);
     }
@@ -90,14 +86,12 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
         sideOffset={8}
       >
         <div className="flex flex-col">
-            {/* Cabeçalho */}
             <div className="px-3 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/50">
                 <h4 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <TagIcon size={14} className="text-zinc-500" /> Manage Tags
                 </h4>
             </div>
 
-            {/* Lista de Tags */}
             <div className="p-2 max-h-[200px] overflow-y-auto custom-scrollbar bg-white dark:bg-zinc-950">
                 {isLoading ? (
                     <div className="flex justify-center py-4"><Loader2 className="animate-spin text-zinc-400" size={16}/></div>
@@ -112,7 +106,6 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
                                     key={tag.id}
                                     className={`group flex items-center justify-between px-2 py-1.5 rounded-md transition-colors ${isSelected ? 'bg-primary/5' : 'hover:bg-zinc-100 dark:hover:bg-zinc-900'}`}
                                 >
-                                    {/* Botão de Selecionar (ocupa o espaço esquerdo) */}
                                     <button
                                         type="button"
                                         onClick={() => onTagToggle(tag.id)}
@@ -122,7 +115,6 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
                                         {isSelected && <Check size={14} className="text-primary mr-2" />}
                                     </button>
 
-                                    {/* Botão de Deletar (Só aparece no hover) */}
                                     <button
                                         type="button"
                                         onClick={(e) => handleDelete(e, tag.id)}
@@ -143,7 +135,6 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
                 )}
             </div>
 
-            {/* Área de Criação */}
             <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
                 <form onSubmit={handleCreate} className="space-y-3">
                     <div className="space-y-1.5">

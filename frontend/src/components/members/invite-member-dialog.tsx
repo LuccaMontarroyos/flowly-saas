@@ -22,7 +22,6 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
     e?.preventDefault();
     setIsLoading(true);
     try {
-        // Envia com e-mail (se tiver) ou sem (gera só o link)
         const response = await api.post("/invites", { 
             role: UserRole.MEMBER,
             email: email || undefined 
@@ -32,7 +31,7 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
         
         if (email) {
             toast.success(`Invite sent to ${email}`);
-            setEmail(""); // Limpa o campo se enviou email
+            setEmail("");
         } else {
             toast.success("Invite link generated");
         }
@@ -67,7 +66,6 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
         </DialogHeader>
 
         <div className="py-2 space-y-6">
-            {/* Opção 1: Enviar por E-mail */}
             <form onSubmit={handleSendInvite} className="space-y-3">
                 <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                     Invite by Email
@@ -103,7 +101,6 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
                 </div>
             </div>
 
-            {/* Opção 2: Gerar Link Manualmente */}
             <div className="space-y-3">
                 {!inviteLink ? (
                     <button 

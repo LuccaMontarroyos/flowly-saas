@@ -20,7 +20,6 @@ export default function LoginPage() {
         try {
             await signIn(data);
         } catch (error) {
-            console.error("Login failed handled via UI");
         }
     };
 

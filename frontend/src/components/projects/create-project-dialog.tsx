@@ -6,9 +6,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { createProject } from "@/services/projects"; // Service
-import { projectSchema } from "@/modules/projects/project.schema"; // Schema
-import { ProjectForm } from "@/modules/projects/project.types"; // Type
+import { createProject } from "@/services/projects";
+import { projectSchema } from "@/modules/projects/project.schema";
+import { ProjectForm } from "@/modules/projects/project.types";
 
 interface CreateProjectDialogProps {
   open: boolean;
