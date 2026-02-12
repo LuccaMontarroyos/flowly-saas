@@ -50,4 +50,35 @@ export class AuthController {
       user: req.user
     })
   }  
+
+  forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const schema = z.object({
+        email: z.email(),
+      });
+      const { email } = schema.parse(req.body);
+
+      await this.authService.forgotPassword({ email });
+
+      return res.status(200).json({ message: "If your email exists, you will receive a reset link." });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const schema = z.object({
+        token: z.string(),
+        password: z.string().min(6),
+      });
+      const data = schema.parse(req.body);
+
+      await this.authService.resetPassword(data);
+
+      return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

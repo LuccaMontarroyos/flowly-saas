@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { token, user } = response.data;
 
       setCookie(undefined, "flowly.token", token, {
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
+        maxAge: 60 * 60 * 24 * 30,
         path: "/",
       });
 

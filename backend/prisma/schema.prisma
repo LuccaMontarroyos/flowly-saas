@@ -59,6 +59,7 @@ model User {
 
   @@index([companyId])
   @@map("users")
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Project {
@@ -155,4 +156,17 @@ model Comment {
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }

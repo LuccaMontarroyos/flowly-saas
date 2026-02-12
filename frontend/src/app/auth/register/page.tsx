@@ -9,6 +9,8 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function RegisterPage() {
     const { register: createAccount, isLoading } = useAuth();

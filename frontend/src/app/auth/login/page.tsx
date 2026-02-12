@@ -17,7 +17,11 @@ export default function LoginPage() {
     });
 
     const onSubmit = async (data: LoginForm) => {
-        await signIn(data);
+        try {
+            await signIn(data);
+        } catch (error) {
+            console.error("Login failed handled via UI");
+        }
     };
 
     return (
@@ -41,7 +45,19 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-text-muted uppercase tracking-wider pl-1">Password</label>
+                    <div className="flex items-center justify-between pl-1">
+                        <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Password
+                        </label>
+                        <Link 
+                            href="/auth/forgot-password" 
+                            className="text-xs font-medium text-primary hover:text-primary-hover transition-colors"
+                            tabIndex={-1}
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
+                    
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                             <Lock className="text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
@@ -50,7 +66,6 @@ export default function LoginPage() {
                             {...register("password")}
                             type="password"
                             className="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-text-main placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-                            placeholder="Enter your password"
                         />
                     </div>
                     {errors.password && <span className="text-xs text-red-500 pl-1">{errors.password.message}</span>}
