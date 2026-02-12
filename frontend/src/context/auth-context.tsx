@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { UserRole } from "@/types"; 
 import { toast } from "sonner";
 import { LoginForm, RegisterForm } from "@/modules/auth/auth.types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface User {
   id: string;
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   const isAuthenticated = !!user;
 
@@ -49,11 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(response.data);
         })
         .catch((error) => {
-          console.error("Token inválido, fazendo logout forçado:", error);
           destroyCookie(undefined, "flowly.token", { path: '/' }); 
           
           delete api.defaults.headers["Authorization"];
           setUser(null);
+          queryClient.clear();
           router.replace("/auth/login");
         })
         .finally(() => {
@@ -62,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
         setIsLoading(false);
     }
-  }, []);
+  }, [queryClient, router]);
 
   async function signIn({ email, password }: LoginForm) {
     try {
@@ -75,7 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
-      setUser(user);
+      setUser({
+        ...user,
+        companyId: response.data.company?.id ?? user.companyId,
+      });
       
       toast.success("Welcome back!", {
          description: "You have successfully logged in.",
@@ -101,7 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             path: "/",
           });
           api.defaults.headers["Authorization"] = `Bearer ${token}`;
-          setUser(user);
+          setUser({
+            ...user,
+            companyId: response.data.company?.id ?? user.companyId,
+          });
       }
 
       toast.success("Account created successfully!", {
@@ -118,7 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function signOut() {
-    destroyCookie(undefined, "flowly.token");
+    queryClient.clear();
+    
+    destroyCookie(undefined, "flowly.token", { path: '/' });
     
     delete api.defaults.headers["Authorization"];
     
