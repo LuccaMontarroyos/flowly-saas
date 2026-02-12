@@ -10,6 +10,7 @@ interface CreateTaskDTO {
     assigneeId?: string;
     status: TaskStatus
     priority?: Priority;
+    tags?: string[];
 }
 
 interface UpdateTaskDTO {
@@ -20,6 +21,7 @@ interface UpdateTaskDTO {
     status?: TaskStatus;
     assigneeId?: string;
     priority?: Priority;
+    tags?: string[];
 }
 
 interface ListTaskParams {
@@ -32,7 +34,7 @@ interface ListTaskParams {
 
 export class TaskService {
 
-    async create({ title, description, projectId, companyId, assigneeId, status, priority }: CreateTaskDTO) {
+    async create({ title, description, projectId, companyId, assigneeId, status, priority, tags }: CreateTaskDTO) {
 
 
         const project = await prisma.project.findFirst({
@@ -63,31 +65,34 @@ export class TaskService {
                 projectId,
                 companyId,
                 assigneeId,
-                order: newOrder,
+                order: newOrder, tags: tags ? {
+                    connect: tags.map(tagId => ({ id: tagId }))
+                } : undefined
             },
             include: {
-                assignee: { select: { id: true, name: true, email: true } },
+                assignee: { select: { id: true, name: true, email: true, avatarUrl: true } },
+                tags: true,
             },
         });
 
         return task;
     }
 
-    async listByProject({projectId, companyId, search, assigneeId, priority}: ListTaskParams) {
+    async listByProject({ projectId, companyId, search, assigneeId, priority }: ListTaskParams) {
 
         const where: any = { projectId, companyId };
 
-    if (search) {
-        where.title = { contains: search, mode: "insensitive" };
-    }
+        if (search) {
+            where.title = { contains: search, mode: "insensitive" };
+        }
 
-    if (assigneeId) {
-        where.assigneeId = assigneeId;
-    }
+        if (assigneeId) {
+            where.assigneeId = assigneeId;
+        }
 
-    if (priority && priority !== "ALL") {
-        where.priority = priority;
-    }
+        if (priority && priority !== "ALL") {
+            where.priority = priority;
+        }
 
         const tasks = await prisma.task.findMany({
             where,
@@ -96,9 +101,10 @@ export class TaskService {
                 assignee: {
                     select: { id: true, name: true, email: true, avatarUrl: true },
                 },
+                tags: true
             },
         },
-    );
+        );
 
         const kanbanStructure = tasks.reduce((acc, task) => {
 
@@ -174,7 +180,7 @@ export class TaskService {
         });
     }
 
-    async update({ taskId, companyId, title, description, status, assigneeId, priority }: UpdateTaskDTO) {
+    async update({ taskId, companyId, title, description, status, assigneeId, priority, tags }: UpdateTaskDTO) {
         const task = await prisma.task.findFirst({
             where: { id: taskId, companyId },
         });
@@ -195,9 +201,13 @@ export class TaskService {
                 status,
                 assigneeId,
                 priority,
+                tags: tags ? {
+                    set: tags.map(tagId => ({ id: tagId }))
+                } : undefined
             },
             include: {
                 assignee: { select: { id: true, name: true, email: true } },
+                tags: true,
             },
         });
 

@@ -7,6 +7,7 @@ export const createTaskSchema = z.object({
   status: z.enum(TaskStatus),
   priority: z.enum(Priority),
   assigneeId: z.uuid().optional().or(z.literal("")).nullable(),
+  tags: z.array(z.string()).optional(),
 });
 
 export const editTaskSchema = z.object({
@@ -15,4 +16,5 @@ export const editTaskSchema = z.object({
   status: z.enum(TaskStatus).optional(),
   priority: z.enum(Priority).optional(),
   assigneeId: z.uuid().optional().nullable(),
+  tags: z.array(z.string()).optional(),
 });

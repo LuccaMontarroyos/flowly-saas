@@ -37,6 +37,7 @@ export interface Task {
   status: TaskStatus;
   priority: Priority;
   projectId: string;
+  companyId: string;
   assigneeId: string | null;
   assignee?: {
     id: string;
@@ -45,7 +46,14 @@ export interface Task {
     avatarUrl?: string | null
   } | null;
   order: number;
+  tags: Tag[];
   createdAt: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface KanbanBoardData {

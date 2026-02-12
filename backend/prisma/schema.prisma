@@ -37,6 +37,7 @@ model Company {
   invites  Invite[]
 
   @@map("companies")
+  tags Tag[]
 }
 
 model User {
@@ -109,6 +110,7 @@ model Task {
   @@index([projectId])
   @@index([assigneeId])
   @@map("tasks")
+  tags Tag[]
 }
 
 model Attachment {
@@ -169,4 +171,21 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  tasks     Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, companyId])
+  @@map("tags")
 }

@@ -19,9 +19,10 @@ export class TaskController {
         assigneeId: z.uuid().optional(),
         status: z.enum(TaskStatus),
         priority: z.enum(Priority).optional(),
+        tags: z.array(z.string()).optional(),
       });
 
-      const { title, description, projectId, assigneeId, status, priority } = schema.parse(req.body);
+      const { title, description, projectId, assigneeId, status, priority, tags } = schema.parse(req.body);
       const { companyId } = req.user;
 
       const task = await this.taskService.create({
@@ -31,7 +32,8 @@ export class TaskController {
         companyId,
         assigneeId,
         status,
-        priority
+        priority,
+        tags,
       });
 
       return res.status(201).json(task);
@@ -84,17 +86,19 @@ export class TaskController {
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const paramsSchema = z.object({ id: z.string().uuid() });
+      const paramsSchema = z.object({ id: z.uuid() });
       const bodySchema = z.object({
         title: z.string().optional(),
         description: z.string().optional(),
         status: z.enum(TaskStatus).optional(),
         assigneeId: z.uuid().nullable().optional(),
-        priority: z.enum(Priority).optional()
+        priority: z.enum(Priority).optional(),
+        tags: z.array(z.string()).optional(),
       });
 
       const { id } = paramsSchema.parse(req.params);
-      const { title, description, status, assigneeId, priority } = bodySchema.parse(req.body);
+      const { title, description, status, assigneeId, priority, tags } = bodySchema.parse(req.body);
+
       const { companyId } = req.user;
 
       const updatedTask = await this.taskService.update({
@@ -104,11 +108,13 @@ export class TaskController {
         description,
         status,
         assigneeId: assigneeId === null ? undefined : assigneeId,
-        priority
+        priority,
+        tags
       });
 
       return res.json(updatedTask);
     } catch (error) {
+      console.error("ERRO NO UPDATE:", error);
       next(error);
     }
   };
