@@ -32,4 +32,41 @@ export class MailService {
       throw new AppError("Failed to send email provider"); 
     }
   }
+
+  async sendInviteEmail(email: string, inviteLink: string, companyName: string, inviterName: string) {
+    try {
+      await this.resend.emails.send({
+        from: 'Flowly <onboarding@resend.dev>',
+        to: email,
+        subject: `You've been invited to join ${companyName} on Flowly`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+            <div style="text-align: center; padding: 20px 0;">
+               <h2 style="color: #6366f1;">Flowly</h2>
+            </div>
+            <div style="border: 1px solid #eaeaea; border-radius: 8px; padding: 24px;">
+                <p style="font-size: 16px;">Hello,</p>
+                <p style="font-size: 16px; line-height: 1.5;">
+                    <strong>${inviterName}</strong> has invited you to join the <strong>${companyName}</strong> workspace on Flowly.
+                </p>
+                <p style="font-size: 16px; line-height: 1.5;">Collaborate with your team, manage tasks, and track projects in one place.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${inviteLink}" style="background-color: #09090b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">Join ${companyName}</a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">Or copy and paste this URL into your browser:</p>
+                <p style="color: #666; font-size: 12px; word-break: break-all;">${inviteLink}</p>
+            </div>
+            <p style="text-align: center; color: #999; font-size: 12px; margin-top: 20px;">
+                If you were not expecting this invitation, you can ignore this email.
+            </p>
+          </div>
+        `
+      });
+    } catch (error) {
+      console.error("Failed to send invite email:", error);
+      throw new AppError("Failed to send invitation email");
+    }
+  }
 }

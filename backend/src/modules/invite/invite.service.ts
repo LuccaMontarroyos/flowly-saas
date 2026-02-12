@@ -2,10 +2,26 @@ import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { Role } from "@prisma/client";
 import crypto from "crypto";
+import { MailService } from "../../shared/providers/mail.service";
 
 export class InviteService {
   
-  async createInvite(companyId: string, role: Role, email?: string) {
+  private mailService: MailService;
+
+  constructor() {
+    this.mailService = new MailService();
+  }
+  
+  async createInvite(companyId: string, userId: string, role: Role, email?: string) {
+    const [company, inviter] = await Promise.all([
+      prisma.company.findUnique({ where: { id: companyId } }),
+      prisma.user.findUnique({ where: { id: userId} })
+    ]);
+
+    if (!company || !inviter) {
+      throw new AppError("Company or Inviter not found", 404);
+    }
+
     const token = crypto.randomBytes(20).toString("hex");
     
     const expiresAt = new Date();
@@ -16,12 +32,24 @@ export class InviteService {
         token,
         companyId,
         role,
-        email,
+        email: email || null,
         expiresAt,
       },
     });
 
-    return invite;
+    const frontendUrl = process.env.NEXT_APP_PUBLIC_URL || 'http://localhost:3001';
+    const inviteLink = `${frontendUrl}/auth/register?invite=${invite.token}`;
+
+    if (email) {
+      await this.mailService.sendInviteEmail(
+        email,
+        inviteLink,
+        company.name,
+        inviter.name
+      );
+    }
+
+    return { ...invite, link: inviteLink };
   }
 
   async validateInvite(token: string) {

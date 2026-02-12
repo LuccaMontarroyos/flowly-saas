@@ -12,6 +12,7 @@ import { commentRoutes } from './modules/comment/comment.routes';
 import { attachmentRoutes } from './modules/attachment/attachment.routes';
 import { createRouteHandler } from "uploadthing/express";
 import { uploadRouter } from "./shared/providers/uploadthing";
+import { inviteRoutes } from './modules/invite/invite.routes';
 
 export class App {
     public app: Express;
@@ -51,6 +52,7 @@ export class App {
         this.app.use('/api/v1/tasks', taskRoutes);
         this.app.use('/api/v1/dashboard', dashboardRoutes);
         this.app.use('/api/v1/comments', commentRoutes);
+        this.app.use('/api/v1/invites', inviteRoutes);
         this.app.use("/api/v1/attachments", attachmentRoutes);
 
     }

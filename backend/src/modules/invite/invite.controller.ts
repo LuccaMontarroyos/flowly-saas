@@ -8,29 +8,36 @@ export class InviteController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { companyId } = req.user;
+      const { companyId, id: userId } = req.user;
       const schema = z.object({
         role: z.enum(Role).default(Role.MEMBER),
+        email: z.email().optional().or(z.literal("")),
       });
-      const { role } = schema.parse(req.body);
+      const { role, email } = schema.parse(req.body);
 
-      const invite = await this.inviteService.createInvite(companyId, role);
-      
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/register?invite=${invite.token}`;
+      const result = await this.inviteService.createInvite(
+        companyId,
+        userId,
+        role,
+        email || undefined
+      );
 
-      return res.json({ ...invite, link: inviteLink });
+      return res.status(201).json(result);
     } catch (error) {
       next(error);
     }
   };
 
   validate = async (req: Request, res: Response, next: NextFunction) => {
-      try {
-          const { token } = req.params;
-          const invite = await this.inviteService.validateInvite(token);
-          return res.json(invite);
-      } catch (error) {
-          next(error);
-      }
+    try {
+      const paramsSchema = z.object({
+        token: z.string().min(1),
+      });
+      const { token } = paramsSchema.parse(req.params);
+      const invite = await this.inviteService.validateInvite(token);
+      return res.json(invite);
+    } catch (error) {
+      next(error);
+    }
   }
 }

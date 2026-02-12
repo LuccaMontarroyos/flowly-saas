@@ -1,7 +1,7 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Link as LinkIcon, Check, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, Link as LinkIcon, Check, Copy, Mail, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -14,16 +14,30 @@ interface InviteMemberDialogProps {
 
 export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [hasCopied, setHasCopied] = useState(false);
 
-  const handleGenerateLink = async () => {
+  const handleSendInvite = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setIsLoading(true);
     try {
-        const response = await api.post("/invites", { role: UserRole.MEMBER });
+        // Envia com e-mail (se tiver) ou sem (gera só o link)
+        const response = await api.post("/invites", { 
+            role: UserRole.MEMBER,
+            email: email || undefined 
+        });
+        
         setInviteLink(response.data.link);
+        
+        if (email) {
+            toast.success(`Invite sent to ${email}`);
+            setEmail(""); // Limpa o campo se enviou email
+        } else {
+            toast.success("Invite link generated");
+        }
     } catch (error) {
-        toast.error("Failed to generate invite link");
+        toast.error("Failed to send invite");
     } finally {
         setIsLoading(false);
     }
@@ -38,6 +52,7 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
 
   const handleClose = () => {
       setInviteLink("");
+      setEmail("");
       onOpenChange(false);
   }
 
@@ -47,63 +62,84 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
         <DialogHeader>
           <DialogTitle className="text-zinc-900 dark:text-zinc-100">Invite Members</DialogTitle>
           <DialogDescription className="text-zinc-500">
-            Generate a unique link to share with your team members. Anyone with this link can join your workspace.
+            Send an email invitation or share a unique link to join your workspace.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-            {!inviteLink ? (
-                <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
-                    <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-full">
-                        <LinkIcon className="text-zinc-500" size={24} />
+        <div className="py-2 space-y-6">
+            {/* Opção 1: Enviar por E-mail */}
+            <form onSubmit={handleSendInvite} className="space-y-3">
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    Invite by Email
+                </label>
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <Mail className="absolute left-3 top-2.5 text-zinc-400" size={18} />
+                        <input 
+                            type="email"
+                            placeholder="colleague@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full pl-10 h-10 rounded-md border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
                     </div>
-                    <div className="space-y-1">
-                        <h3 className="font-medium text-zinc-900 dark:text-white">Invite via Link</h3>
-                        <p className="text-sm text-zinc-500 max-w-[280px] mx-auto">
-                            Create a secure link that allows members to join your organization instantly.
+                    <button 
+                        type="submit"
+                        disabled={isLoading || !email}
+                        className="bg-primary hover:bg-primary/90 text-white px-4 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        {isLoading && email ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+                        Send
+                    </button>
+                </div>
+            </form>
+
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-500">Or generate link</span>
+                </div>
+            </div>
+
+            {/* Opção 2: Gerar Link Manualmente */}
+            <div className="space-y-3">
+                {!inviteLink ? (
+                    <button 
+                        type="button"
+                        onClick={() => handleSendInvite()}
+                        disabled={isLoading}
+                        className="w-full h-10 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-md flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                    >
+                        {isLoading && !email ? <Loader2 className="animate-spin" size={16} /> : <LinkIcon size={16} />}
+                        Generate a unique invite link
+                    </button>
+                ) : (
+                    <div className="animate-in fade-in slide-in-from-top-2 space-y-2">
+                        <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                            Share Link
+                        </label>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                readOnly 
+                                value={inviteLink}
+                                className="flex-1 h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm text-zinc-600 dark:text-zinc-300 focus:outline-none"
+                            />
+                            <button 
+                                onClick={copyToClipboard}
+                                className="h-10 px-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300"
+                            >
+                                {hasCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                            </button>
+                        </div>
+                        <p className="text-[10px] text-zinc-400 text-center">
+                            This link is valid for 7 days.
                         </p>
                     </div>
-                </div>
-            ) : (
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Invite Link</label>
-                    <div className="flex items-center gap-2">
-                        <input 
-                            readOnly 
-                            value={inviteLink}
-                            className="flex-1 h-10 px-3 rounded-md border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-sm text-zinc-600 dark:text-zinc-300 focus:outline-none"
-                        />
-                        <button 
-                            onClick={copyToClipboard}
-                            className="h-10 px-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                            {hasCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} className="text-zinc-500" />}
-                        </button>
-                    </div>
-                    <p className="text-xs text-zinc-500">This link expires in 7 days.</p>
-                </div>
-            )}
+                )}
+            </div>
         </div>
-
-        <DialogFooter>
-            {!inviteLink ? (
-                <button 
-                    disabled={isLoading} 
-                    onClick={handleGenerateLink} 
-                    className="w-full bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
-                >
-                    {isLoading && <Loader2 className="animate-spin" size={16} />}
-                    Generate Link
-                </button>
-            ) : (
-                <button 
-                    onClick={handleClose} 
-                    className="w-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                    Done
-                </button>
-            )}
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
