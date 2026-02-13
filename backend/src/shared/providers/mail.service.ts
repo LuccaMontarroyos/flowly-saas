@@ -33,6 +33,28 @@ export class MailService {
     }
   }
 
+  async sendVerificationEmail(email: string, verifyLink: string, userName: string) {
+    try {
+      await this.resend.emails.send({
+        from: 'Flowly <onboarding@resend.dev>',
+        to: email,
+        subject: 'Verify your email - Flowly',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Hello, ${userName}</h2>
+            <p>Welcome to Flowly! Please confirm your email address to activate your account.</p>
+            <p>Click the button below to verify your email. This link expires in 24 hours.</p>
+            <a href="${verifyLink}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 16px 0;">Verify Email</a>
+            <p style="color: #666; font-size: 14px;">If you didn't create an account, you can safely ignore this email.</p>
+          </div>
+        `
+      });
+    } catch (error) {
+      console.error("Failed to send verification email:", error);
+      throw new AppError("Failed to send verification email");
+    }
+  }
+
   async sendInviteEmail(email: string, inviteLink: string, companyName: string, inviterName: string) {
     try {
       await this.resend.emails.send({

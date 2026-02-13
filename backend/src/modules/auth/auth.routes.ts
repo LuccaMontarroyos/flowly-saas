@@ -12,6 +12,7 @@ authRoutes.post('/login', authController.login);
 
 authRoutes.post('/forgot-password', authController.forgotPassword);
 authRoutes.post('/reset-password', authController.resetPassword);
+authRoutes.post('/verify-email', authController.verifyEmail);
 
 authRoutes.get('/profile', ensureAuthenticated, ensureAdmin, authController.profile);
 

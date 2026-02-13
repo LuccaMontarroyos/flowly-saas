@@ -19,7 +19,14 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginForm) => {
         try {
             await signIn(data);
-        } catch (error) {
+        } catch (error: any) {
+            const status = error?.response?.status;
+            const message = error?.response?.data?.message;
+
+            if (status === 403 && message === "Email not verified") {
+                // mensagem já tratada no toast dentro do contexto, aqui só impedimos erro silencioso
+                return;
+            }
         }
     };
 

@@ -97,30 +97,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function register(data: RegisterForm) {
     try {
-      const { token, user, company } = await registerRequest(data);
-      
-      if (token) {
-          setCookie(undefined, "flowly.token", token, {
-            maxAge: 60 * 60 * 24 * 30,
-            path: "/",
-          });
-          api.defaults.headers["Authorization"] = `Bearer ${token}`;
-          setUser({
-            ...user,
-            companyId: company?.id ?? user.companyId,
-          });
-      }
+      await registerRequest(data);
 
       toast.success("Account created successfully!", {
-        description: `Welcome to Flowly, ${data.name}.`,
+        description: `We sent a verification link to ${data.email}.`,
         className: "bg-green-500 text-white border-none",
       });
 
-      router.push("/dashboard");
+      router.push("/auth/verify-request");
     } catch (error: any) {
-        const errorMessage = error.response?.data?.message || "Registration failed.";
-        toast.error("Registration failed", { description: errorMessage });
-        throw error;
+      const errorMessage =
+        error.response?.data?.message || "Registration failed.";
+      toast.error("Registration failed", { description: errorMessage });
+      throw error;
     }
   }
 

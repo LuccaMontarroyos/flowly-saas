@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import argon2 from "argon2";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -54,24 +54,29 @@ export class AuthService {
         },
       });
 
-      return { company, user };
+      const verificationToken = await (tx as Prisma.TransactionClient).verificationToken.create({
+        data: {
+          token: crypto.randomBytes(32).toString("hex"),
+          userId: user.id,
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24h
+        },
+      });
+
+      return { company, user, verificationToken };
     });
 
-    const token = this.generateToken(result.user.id, result.company.id, result.user.role);
+    const frontendUrl =
+      process.env.NEXT_APP_PUBLIC_URL || "http://localhost:3001";
+    const verifyLink = `${frontendUrl}/auth/verify?token=${result.verificationToken.token}`;
+
+    await this.mailService.sendVerificationEmail(
+      result.user.email,
+      verifyLink,
+      result.user.name
+    );
 
     return {
-      user: {
-        id: result.user.id,
-        name: result.user.name,
-        email: result.user.email,
-        role: result.user.role,
-      },
-      company: {
-        id: result.company.id,
-        name: result.company.name,
-        slug: result.company.slug,
-      },
-      token,
+      message: "Account created. Please check your email to verify your account.",
     };
   }
 
@@ -84,6 +89,10 @@ export class AuthService {
 
     if (!user) {
       throw new AppError("Invalid credentials", 401);
+    }
+
+    if (!user.emailVerifiedAt) {
+      throw new AppError("Email not verified", 403);
     }
 
     const isPasswordValid = await argon2.verify(user.password, password);
@@ -108,6 +117,48 @@ export class AuthService {
         slug: user.company.slug,
       },
       token,
+    };
+  }
+
+  async verifyEmail(token: string) {
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!verificationToken) {
+      throw new AppError("Invalid or expired verification token", 400);
+    }
+
+    if (new Date() > verificationToken.expiresAt) {
+      throw new AppError("Verification token expired", 400);
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: verificationToken.userId },
+        data: { emailVerifiedAt: new Date() },
+      });
+      await tx.verificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+    });
+
+    const user = verificationToken.user;
+    const tokenJwt = this.generateToken(user.id, user.companyId, user.role);
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      },
+      company: {
+        id: user.companyId,
+      },
+      token: tokenJwt,
     };
   }
 
