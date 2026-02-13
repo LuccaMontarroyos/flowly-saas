@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Plus, Tag as TagIcon, Check, Loader2, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TagBadge } from "./tag-badge";
 import { toast } from "sonner";
 import { Tag } from "@/types";
+import { createTag, deleteTag, getTags } from "@/services/tags";
 
 interface TagSelectorProps {
   selectedTags: Tag[];
@@ -25,14 +25,14 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
 
   const { data: availableTags = [], isLoading } = useQuery<Tag[]>({
     queryKey: ["tags"],
-    queryFn: async () => (await api.get("/tags")).data,
+    queryFn: getTags,
     enabled: isOpen 
   });
 
   const createTagMutation = useMutation({
     mutationFn: async () => {
-      const res = await api.post("/tags", { name: newTagName, color: selectedColor });
-      return res.data;
+      const tag = await createTag({ name: newTagName, color: selectedColor });
+      return tag;
     },
     onSuccess: (newTag) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });
@@ -45,7 +45,7 @@ export function TagSelector({ selectedTags, onTagToggle, companyId }: TagSelecto
 
   const deleteTagMutation = useMutation({
     mutationFn: async (tagId: string) => {
-      await api.delete(`/tags/${tagId}`);
+      await deleteTag(tagId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tags"] });

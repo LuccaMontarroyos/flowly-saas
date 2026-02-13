@@ -1,19 +1,12 @@
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
-
-interface CreateProjectDTO {
-    name: string;
-    description?: string;
-    companyId: string;
-    ownerId: string;
-}
-
-interface ListProjectsDTO {
-    companyId: string;
-    page?: number;
-    limit?: number;
-    search?: string;
-}
+import {
+  CreateProjectDTO,
+  DeleteProjectDTO,
+  FindProjectByIdDTO,
+  ListProjectsDTO,
+  UpdateProjectDTO,
+} from "./dtos/project.dtos";
 
 export class ProjectService {
 
@@ -83,7 +76,7 @@ export class ProjectService {
         };
     }
 
-    async update(projectId: string, companyId: string, data: { name?: string, description?: string }) {
+    async update({ projectId, companyId, name, description }: UpdateProjectDTO) {
 
         const project = await prisma.project.findFirst({
             where: { id: projectId, companyId },
@@ -96,15 +89,15 @@ export class ProjectService {
         const updatedProject = await prisma.project.update({
             where: { id: projectId },
             data: {
-                name: data.name,
-                description: data.description
+                name,
+                description
             }
         })
 
         return updatedProject;
     }
 
-    async findById(projectId: string, companyId: string) {
+    async findById({ projectId, companyId }: FindProjectByIdDTO) {
         const project = await prisma.project.findFirst({
             where: {
                 id: projectId,
@@ -119,7 +112,7 @@ export class ProjectService {
         return project;
     }
 
-    async delete(projectId: string, companyId: string) {
+    async delete({ projectId, companyId }: DeleteProjectDTO) {
 
         const project = await prisma.project.findFirst({
             where: { id: projectId, companyId },

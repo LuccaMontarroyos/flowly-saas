@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { loginSchema } from "@/modules/auth/auth.schema";
 import { LoginForm } from "@/modules/auth/auth.types";
 import { useAuth } from "@/hooks/use-auth";
+import { loginSchema } from "@/schemas/auth.schema";
 
 export default function LoginPage() {
     const { signIn, isLoading } = useAuth();

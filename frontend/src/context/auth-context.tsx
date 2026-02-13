@@ -3,11 +3,12 @@
 import { createContext, useEffect, useState, ReactNode } from "react";
 import { setCookie, parseCookies, destroyCookie } from "nookies";
 import { useRouter, usePathname } from "next/navigation";
-import { api } from "@/lib/api";
 import { UserRole } from "@/types"; 
 import { toast } from "sonner";
 import { LoginForm, RegisterForm } from "@/modules/auth/auth.types";
 import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { fetchCurrentUser, loginRequest, registerRequest } from "@/services/auth-api";
 
 interface User {
   id: string;
@@ -46,9 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-      api.get("/users/me")
-        .then((response) => {
-          setUser(response.data);
+      fetchCurrentUser()
+        .then((data) => {
+          setUser(data);
         })
         .catch((error) => {
           destroyCookie(undefined, "flowly.token", { path: '/' }); 
@@ -68,8 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn({ email, password }: LoginForm) {
     try {
-      const response = await api.post("/auth/login", { email, password });
-      const { token, user } = response.data;
+      const { token, user, company } = await loginRequest({ email, password });
 
       setCookie(undefined, "flowly.token", token, {
         maxAge: 60 * 60 * 24 * 30,
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
       setUser({
         ...user,
-        companyId: response.data.company?.id ?? user.companyId,
+        companyId: company?.id ?? user.companyId,
       });
       
       toast.success("Welcome back!", {
@@ -97,8 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function register(data: RegisterForm) {
     try {
-      const response = await api.post("/auth/register", data);
-      const { token, user } = response.data;
+      const { token, user, company } = await registerRequest(data);
       
       if (token) {
           setCookie(undefined, "flowly.token", token, {
@@ -108,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           api.defaults.headers["Authorization"] = `Bearer ${token}`;
           setUser({
             ...user,
-            companyId: response.data.company?.id ?? user.companyId,
+            companyId: company?.id ?? user.companyId,
           });
       }
 

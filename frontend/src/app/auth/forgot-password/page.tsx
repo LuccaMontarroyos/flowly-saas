@@ -5,14 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { z } from "zod";
-import { api } from "@/lib/api";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const forgotPasswordSchema = z.object({
-  email: z.email("Please enter a valid email"),
-});
+import { forgotPasswordSchema } from "@/schemas/auth.schema";
+import { z } from "zod";
+import { forgotPassword } from "@/services/auth";
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 
@@ -24,7 +21,7 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordForm) => {
     try {
-      await api.post("/auth/forgot-password", data);
+      await forgotPassword(data);
       setIsSubmitted(true);
       toast.success("Reset link sent!");
     } catch (error) {

@@ -1,140 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getProjectById } from "@/services/projects";
-import { getProjectTasks, moveTask } from "@/services/tasks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { KanbanColumn } from "@/components/kanban/kanban-column";
-import { Task, TaskStatus, KanbanBoardData } from "@/types";
+import { TaskStatus } from "@/types";
 import { CreateTaskDialog } from "@/components/kanban/create-task-dialog";
-import { DragDropContext, DropResult } from "@hello-pangea/dnd";
-import { toast } from "sonner";
+import { DragDropContext } from "@hello-pangea/dnd";
 import { EditTaskDialog } from "@/components/kanban/edit-task-dialog";
 import { TaskListView } from "@/components/kanban/task-list-view";
-import { useAuth } from "@/hooks/use-auth";
-import { useDebounce } from "@/hooks/use-debounce";
 import { BoardFilters } from "@/components/kanban/board-filters";
+import { useTaskBoard } from "@/hooks/use-task-board";
 
 export default function ProjectDetailsPage() {
-    const { user } = useAuth();
     const params = useParams();
     const projectId = params.id as string;
-    const queryClient = useQueryClient();
 
-    const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
-    const [createTaskStatus, setCreateTaskStatus] = useState<TaskStatus>(TaskStatus.TODO);
-
-    const [localBoardData, setLocalBoardData] = useState<KanbanBoardData | null>(null);
-
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-    const [viewMode, setViewMode] = useState<"board" | "list">("board");
-
-    const [search, setSearch] = useState("");
-    const [onlyMyTasks, setOnlyMyTasks] = useState(false);
-    const [priorityFilter, setPriorityFilter] = useState("ALL");
-
-    const debouncedSearch = useDebounce(search, 500);
-
-    const hasActiveFilters = !!debouncedSearch || onlyMyTasks || priorityFilter !== "ALL";
-
-    const { data: project, isLoading: isLoadingProject } = useQuery({
-        queryKey: ["project", projectId],
-        queryFn: () => getProjectById(projectId),
-    });
-
-    const { data: serverBoardData, isLoading: isLoadingTasks } = useQuery({
-        queryKey: ["tasks", projectId, debouncedSearch, onlyMyTasks, priorityFilter],
-        queryFn: () => getProjectTasks(projectId, {
-            search: debouncedSearch,
-            priority: priorityFilter === "ALL" ? undefined : priorityFilter, 
-            assigneeId: onlyMyTasks ? user?.id : undefined
-        }),
-        enabled: !!projectId,
-    });
-
-    useEffect(() => {
-        if (serverBoardData) {
-            setLocalBoardData(serverBoardData);
-        }
-    }, [serverBoardData]);
-
-    const openCreateModal = () => {
-        setCreateTaskStatus(TaskStatus.TODO);
-        setIsCreateTaskOpen(true);
-    };
-
-    const handleAddFromColumn = (status: TaskStatus) => {
-        setCreateTaskStatus(status);
-        setIsCreateTaskOpen(true);
-    }
-
-    const onDragEnd = async (result: DropResult) => {
-        if (hasActiveFilters) {
-            toast.info("Cannot reorder tasks while filters are active.", {
-                description: "Clear filters to enable Drag & Drop."
-            });
-            return;
-        }
-        
-        const { destination, source, draggableId } = result;
-
-        if (!destination) return;
-
-        if (
-            destination.droppableId === source.droppableId &&
-            destination.index === source.index
-        ) {
-            return;
-        }
-
-        const startStatus = source.droppableId as TaskStatus;
-        const finishStatus = destination.droppableId as TaskStatus;
-
-        const newBoard = { ...localBoardData! };
-
-        const sourceList = Array.from(newBoard[startStatus]);
-        const [movedTask] = sourceList.splice(source.index, 1);
-
-        const updatedTask = { ...movedTask, status: finishStatus };
-
-        if (startStatus === finishStatus) {
-            sourceList.splice(destination.index, 0, updatedTask);
-            newBoard[startStatus] = sourceList;
-        } else {
-            const destinationList = Array.from(newBoard[finishStatus]);
-            destinationList.splice(destination.index, 0, updatedTask);
-            newBoard[startStatus] = sourceList;
-            newBoard[finishStatus] = destinationList;
-        }
-
-        setLocalBoardData(newBoard);
-
-        try {
-            await moveTask(draggableId, finishStatus, destination.index);
-        } catch (error) {
-            toast.error("Failed to move task");
-            setLocalBoardData(serverBoardData!);
-        }
-    };
-
-    const handleTaskClick = (task: Task) => {
-        setSelectedTask(task);
-    };
-
-    const getAllTasks = () => {
-        if (!localBoardData) return [];
-        return [
-            ...localBoardData.TODO,
-            ...localBoardData.IN_PROGRESS,
-            ...localBoardData.DONE
-        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    };
-
-    const isLoading = isLoadingProject || isLoadingTasks || !localBoardData;
+    const {
+        project,
+        isLoading,
+        boardData,
+        viewMode,
+        setViewMode,
+        search,
+        setSearch,
+        onlyMyTasks,
+        setOnlyMyTasks,
+        priorityFilter,
+        setPriorityFilter,
+        isCreateTaskOpen,
+        setIsCreateTaskOpen,
+        createTaskStatus,
+        openCreateModal,
+        handleAddFromColumn,
+        selectedTask,
+        setSelectedTask,
+        handleTaskClick,
+        onDragEnd,
+        getAllTasks,
+    } = useTaskBoard(projectId);
 
     if (isLoading) return <ProjectDetailsSkeleton />;
     if (!project) return <div>Project not found</div>;
@@ -184,29 +89,36 @@ export default function ProjectDetailsPage() {
                     </div>
                 </div>
             </header>
-            <BoardFilters search={search} onSearchChange={setSearch} onlyMyTasks={onlyMyTasks} onOnlyMyTasksChange={setOnlyMyTasks} priority={priorityFilter} onPriorityChange={setPriorityFilter}/>
+            <BoardFilters
+                search={search}
+                onSearchChange={setSearch}
+                onlyMyTasks={onlyMyTasks}
+                onOnlyMyTasksChange={setOnlyMyTasks}
+                priority={priorityFilter}
+                onPriorityChange={setPriorityFilter}
+            />
 
-            {viewMode === "board" ? (
+            {viewMode === "board" && boardData ? (
                 <DragDropContext onDragEnd={onDragEnd}>
                     <main className="flex-1 overflow-x-auto overflow-y-hidden p-6">
                         <div className="flex h-full gap-6 min-w-max pb-4">
                             <KanbanColumn
                                 status={TaskStatus.TODO}
-                                tasks={localBoardData.TODO}
+                                tasks={boardData.TODO}
                                 color="text-zinc-400"
                                 onTaskClick={handleTaskClick}
                                 onAddClick={handleAddFromColumn}
                             />
                             <KanbanColumn
                                 status={TaskStatus.IN_PROGRESS}
-                                tasks={localBoardData.IN_PROGRESS}
+                                tasks={boardData.IN_PROGRESS}
                                 color="text-blue-500"
                                 onTaskClick={handleTaskClick}
                                 onAddClick={handleAddFromColumn}
                             />
                             <KanbanColumn
                                 status={TaskStatus.DONE}
-                                tasks={localBoardData.DONE}
+                                tasks={boardData.DONE}
                                 color="text-emerald-500"
                                 onTaskClick={handleTaskClick}
                                 onAddClick={handleAddFromColumn}

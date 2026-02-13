@@ -1,6 +1,11 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { z } from "zod";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "./auth.schema";
 
 export class AuthController {
   private authService: AuthService;
@@ -11,12 +16,6 @@ export class AuthController {
 
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const registerSchema = z.object({
-        companyName: z.string().min(2, "Company name is required"),
-        name: z.string().min(2, "Name is required"),
-        email: z.email("Invalid email"),
-        password: z.string().min(6, "Password must be at least 6 characters"),
-      });
       const data = registerSchema.parse(req.body);
 
       const result = await this.authService.register(data);
@@ -29,11 +28,6 @@ export class AuthController {
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const loginSchema = z.object({
-        email: z.email(),
-        password: z.string(),
-      });
-
       const data = loginSchema.parse(req.body);
 
       const result = await this.authService.login(data);
@@ -53,10 +47,7 @@ export class AuthController {
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const schema = z.object({
-        email: z.email(),
-      });
-      const { email } = schema.parse(req.body);
+      const { email } = forgotPasswordSchema.parse(req.body);
 
       await this.authService.forgotPassword({ email });
 
@@ -68,11 +59,7 @@ export class AuthController {
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const schema = z.object({
-        token: z.string(),
-        password: z.string().min(6),
-      });
-      const data = schema.parse(req.body);
+      const data = resetPasswordSchema.parse(req.body);
 
       await this.authService.resetPassword(data);
 

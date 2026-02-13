@@ -4,8 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Loader2, Link as LinkIcon, Check, Copy, Mail, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
-import { UserRole } from "@/types";
+import { createInvite } from "@/services/invites";
 
 interface InviteMemberDialogProps {
   open: boolean;
@@ -22,12 +21,8 @@ export function InviteMemberDialog({ open, onOpenChange }: InviteMemberDialogPro
     e?.preventDefault();
     setIsLoading(true);
     try {
-        const response = await api.post("/invites", { 
-            role: UserRole.MEMBER,
-            email: email || undefined 
-        });
-        
-        setInviteLink(response.data.link);
+        const data = await createInvite(email || undefined);
+        setInviteLink(data.link);
         
         if (email) {
             toast.success(`Invite sent to ${email}`);

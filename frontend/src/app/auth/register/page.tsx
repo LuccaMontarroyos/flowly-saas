@@ -2,15 +2,15 @@
 import { ArrowRight, Building2, Lock, Mail, User, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { registerSchema } from "@/modules/auth/auth.schema";
 import { RegisterForm } from "@/modules/auth/auth.types";
 import { useAuth } from "@/hooks/use-auth";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema } from "@/schemas/auth.schema";
+import { getInviteDetails } from "@/services/invites";
 
 export default function RegisterPage() {
     const { register: createAccount, isLoading } = useAuth();
@@ -27,10 +27,10 @@ export default function RegisterPage() {
     useEffect(() => {
         if (inviteToken) {
             setIsValidatingInvite(true);
-            api.get(`/invites/${inviteToken}`)
-                .then(res => {
-                    setInviteData(res.data);
-                    setValue("companyName", res.data.company.name);
+            getInviteDetails(inviteToken)
+                .then(data => {
+                    setInviteData(data);
+                    setValue("companyName", data.company.name);
                 })
                 .catch(() => {
                     toast.error("Invalid or expired invite link");

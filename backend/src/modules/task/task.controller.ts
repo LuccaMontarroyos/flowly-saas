@@ -1,7 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import { TaskService } from "./task.service";
+import { Priority, TaskStatus } from "@prisma/client";
 import { z } from "zod";
-import { TaskStatus, Priority } from "@prisma/client";
+import { TaskService } from "./task.service";
+import {
+  createTaskSchema,
+  deleteTaskParamsSchema,
+  listTasksParamsSchema,
+  listTasksQuerySchema,
+  moveTaskBodySchema,
+  moveTaskParamsSchema,
+  updateTaskBodySchema,
+  updateTaskParamsSchema,
+} from "./task.schema";
 
 export class TaskController {
   private taskService: TaskService;
@@ -12,17 +22,8 @@ export class TaskController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const schema = z.object({
-        title: z.string().min(1),
-        description: z.string().optional(),
-        projectId: z.uuid(),
-        assigneeId: z.union([z.string().uuid(), z.literal("")]).optional(),
-        status: z.enum(TaskStatus),
-        priority: z.enum(Priority).optional(),
-        tags: z.array(z.string()).optional(),
-      });
-
-      const { title, description, projectId, assigneeId, status, priority, tags } = schema.parse(req.body);
+      const { title, description, projectId, assigneeId, status, priority, tags } =
+        createTaskSchema.parse(req.body);
       const { companyId } = req.user;
 
       const task = await this.taskService.create({
@@ -44,21 +45,17 @@ export class TaskController {
 
   listByProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const paramsSchema = z.object({
-        projectId: z.uuid(),
-      });
-
-      const querySchema = z.object({
-        search: z.string().optional(),
-        assigneeId: z.union([z.uuid(), z.literal("")]).optional(),
-        priority: z.string().optional(),
-      });
-
-      const { projectId } = paramsSchema.parse(req.params);
-      const filters = querySchema.parse(req.query);
+      const { projectId } = listTasksParamsSchema.parse(req.params);
+      const filters = listTasksQuerySchema.parse(req.query);
       const { companyId } = req.user;
 
-      const kanbanBoard = await this.taskService.listByProject({projectId, companyId, search: filters.search, assigneeId: filters.assigneeId || undefined, priority: filters.priority});
+      const kanbanBoard = await this.taskService.listByProject({
+        projectId,
+        companyId,
+        search: filters.search,
+        assigneeId: filters.assigneeId || undefined,
+        priority: filters.priority,
+      });
 
       return res.json(kanbanBoard);
     } catch (error) {
@@ -68,14 +65,8 @@ export class TaskController {
 
   move = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const paramsSchema = z.object({ id: z.string().uuid() });
-      const bodySchema = z.object({
-        status: z.enum(["TODO", "IN_PROGRESS", "DONE"]),
-        index: z.number().min(0),
-      });
-
-      const { id } = paramsSchema.parse(req.params);
-      const { status, index } = bodySchema.parse(req.body);
+      const { id } = moveTaskParamsSchema.parse(req.params);
+      const { status, index } = moveTaskBodySchema.parse(req.body);
 
       const task = await this.taskService.updatePosition(id, status as any, index);
       return res.json(task);
@@ -86,18 +77,9 @@ export class TaskController {
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const paramsSchema = z.object({ id: z.uuid() });
-      const bodySchema = z.object({
-        title: z.string().optional(),
-        description: z.string().optional(),
-        status: z.enum(TaskStatus).optional(),
-        assigneeId: z.union([z.string().uuid(), z.literal(""), z.null()]).optional(),
-        priority: z.enum(Priority).optional(),
-        tags: z.array(z.string()).optional(),
-      });
-
-      const { id } = paramsSchema.parse(req.params);
-      const { title, description, status, assigneeId, priority, tags } = bodySchema.parse(req.body);
+      const { id } = updateTaskParamsSchema.parse(req.params);
+      const { title, description, status, assigneeId, priority, tags } =
+        updateTaskBodySchema.parse(req.body);
 
       const { companyId } = req.user;
 
@@ -109,20 +91,18 @@ export class TaskController {
         status,
         assigneeId: (assigneeId === null || assigneeId === "") ? undefined : assigneeId,
         priority,
-        tags
+        tags,
       });
 
       return res.json(updatedTask);
     } catch (error) {
-      console.error("ERRO NO UPDATE:", error);
       next(error);
     }
   };
 
   remove = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const paramsSchema = z.object({ id: z.string().uuid() });
-      const { id } = paramsSchema.parse(req.params);
+      const { id } = deleteTaskParamsSchema.parse(req.params);
       const { companyId } = req.user;
 
       await this.taskService.delete(id, companyId);

@@ -5,19 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { z } from "zod";
-import { api } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useEffect } from "react";
-
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+import { resetPasswordSchema } from "@/schemas/auth.schema";
+import { z } from "zod";
+import { resetPassword } from "@/services/auth";
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
@@ -40,9 +33,9 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordForm) => {
     if (!token) return;
     try {
-      await api.post("/auth/reset-password", {
+      await resetPassword({
         token,
-        password: data.password
+        password: data.password,
       });
       toast.success("Password updated successfully!");
       router.push("/auth/login");

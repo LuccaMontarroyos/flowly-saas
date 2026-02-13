@@ -1,6 +1,2 @@
-import { z } from "zod";
+export * from "@/schemas/projects.schema";
 
-export const projectSchema = z.object({
-  name: z.string().min(3, "Min 3 characters"),
-  description: z.string().optional(),
-});

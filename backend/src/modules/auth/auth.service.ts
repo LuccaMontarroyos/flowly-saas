@@ -1,32 +1,17 @@
+import { Role } from "@prisma/client";
+import argon2 from "argon2";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import slugify from "slugify";
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
-import argon2 from "argon2";
-import jwt from "jsonwebtoken";
-import { Role, User } from "@prisma/client";
-import slugify from "slugify";
-import crypto from "crypto";
 import { MailService } from "../../shared/providers/mail.service";
-
-interface RegisterDTO {
-  companyName: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface LoginDTO {
-  email: string;
-  password: string;
-}
-
-interface ForgotPasswordDTO {
-  email: string;
-}
-
-interface ResetPasswordDTO {
-  token: string;
-  password: string;
-}
+import {
+  ForgotPasswordDTO,
+  LoginDTO,
+  RegisterDTO,
+  ResetPasswordDTO,
+} from "./dtos/auth.dtos";
 
 export class AuthService {
 

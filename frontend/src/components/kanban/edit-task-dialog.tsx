@@ -8,7 +8,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { updateTask, deleteTask } from "@/services/tasks";
 import { Task, TaskStatus, Priority, Tag } from "@/types";
 import { useEffect } from "react";
-import { editTaskSchema } from "@/modules/tasks/task.schema";
 import { EditTaskForm } from "@/modules/tasks/task.types";
 import { getCompanyUsers } from "@/services/users";
 import { TaskComments } from "./task-comments";
@@ -17,7 +16,8 @@ import { Editor } from "@/components/ui/editor";
 import { TaskAttachments } from "./task-attachments";
 import { TagSelector } from "./tag-selector";
 import { TagBadge } from "./tag-badge"; 
-import { api } from "@/lib/api";
+import { getTags } from "@/services/tags";
+import { editTaskSchema } from "@/modules/tasks/task.schema";
 
 interface EditTaskDialogProps {
     task: Task | null;
@@ -44,7 +44,7 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
     const { data: allTags = [] } = useQuery<Tag[]>({
         queryKey: ["tags"],
-        queryFn: async () => (await api.get("/tags")).data,
+        queryFn: getTags,
         enabled: open
     });
 
