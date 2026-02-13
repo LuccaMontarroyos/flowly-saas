@@ -24,7 +24,6 @@ export default function LoginPage() {
             const message = error?.response?.data?.message;
 
             if (status === 403 && message === "Email not verified") {
-                // mensagem já tratada no toast dentro do contexto, aqui só impedimos erro silencioso
                 return;
             }
         }

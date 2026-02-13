@@ -14,7 +14,7 @@ export class MailService {
   async sendForgotPasswordEmail(email: string, resetLink: string, userName: string) {
     try {
       await this.resend.emails.send({
-        from: 'Flowly <onboarding@resend.dev>', // Use seu domínio verificado em prod
+        from: 'Flowly <onboarding@resend.dev>',
         to: email,
         subject: 'Reset your password - Flowly',
         html: `
