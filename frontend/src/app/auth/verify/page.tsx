@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 type Status = "loading" | "success" | "error";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -84,3 +84,14 @@ export default function VerifyEmailPage() {
   );
 }
 
+export default function VerifyEmailPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+        }>
+            <VerifyEmailContent />
+        </Suspense>
+    );
+}

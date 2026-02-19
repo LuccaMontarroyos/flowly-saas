@@ -5,7 +5,7 @@ export interface User {
   role: UserRole;
   createdAt: string;
   companyId: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
 }
 
 export interface Project {

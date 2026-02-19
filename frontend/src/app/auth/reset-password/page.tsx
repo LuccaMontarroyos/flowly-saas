@@ -7,14 +7,14 @@ import Link from "next/link";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { resetPasswordSchema } from "@/schemas/auth.schema";
 import { z } from "zod";
 import { resetPassword } from "@/services/auth";
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -90,5 +90,17 @@ export default function ResetPasswordPage() {
         </button>
       </form>
     </AuthLayout>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
