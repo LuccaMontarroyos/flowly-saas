@@ -29,7 +29,7 @@ export class App {
     private middlewares() {
         this.app.use(express.json());
         this.app.use(cors({
-            origin: 'http://localhost:3001',
+            origin: process.env.FRONTEND_URL || 'http://localhost:3001',
             credentials: true,
             allowedHeaders: ['Content-Type', 'Authorization', 'x-uploadthing-package', 'x-uploadthing-version'],
         }));
