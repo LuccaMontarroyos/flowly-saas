@@ -4,7 +4,7 @@ import { parseCookies, destroyCookie } from "nookies";
 const { "flowly.token": token } = parseCookies();
 
 export const api = axios.create({
-  baseURL: 'http://localhost:3000/api/v1',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1',
 });
 
 if (token) {
