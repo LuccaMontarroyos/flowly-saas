@@ -1,5 +1,5 @@
-import Image from "next/image";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <h1>Flowly Frontend Setup</h1>;
+  redirect("/dashboard");
 }
